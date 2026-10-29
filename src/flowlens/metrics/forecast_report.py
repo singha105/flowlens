@@ -51,7 +51,18 @@ def load_throughput(store: Store, repo: str, unit: str) -> Throughput:
     run = store.last_successful_run(repo)
     as_of = pd.Timestamp((run.finished_at if run else None) or datetime.now(UTC))
     items = flow.work_item_frame(store.rows("work_items"))
-    floor = run.coverage_from if run else None
+    return throughput_from(items, repo, unit, as_of, run.coverage_from if run else None)
+
+
+def throughput_from(
+    items: pd.DataFrame,
+    repo: str,
+    unit: str,
+    as_of: pd.Timestamp,
+    coverage_from: datetime | None,
+) -> Throughput:
+    """Weekly throughput over every whole week the history from ``coverage_from`` covers."""
+    floor = coverage_from
     if floor is None:
         floor = items["created_at"].min() if len(items) else as_of
     floor = pd.Timestamp(floor).normalize()

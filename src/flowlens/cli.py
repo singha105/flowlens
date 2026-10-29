@@ -9,6 +9,7 @@ import typer
 
 from flowlens import __version__
 from flowlens.config import ConfigError, load_config
+from flowlens.html_report import build_report, write_site
 from flowlens.ingest.client import GitHubError
 from flowlens.ingest.runner import IngestSummary, ingest_repo, parse_repo
 from flowlens.metrics.dora_report import (
@@ -28,7 +29,9 @@ from flowlens.metrics.forecast_report import (
 )
 from flowlens.metrics.report import flow_report_for, format_flow, write_report
 from flowlens.model.build import ModelCounts, build_model
-from flowlens.quality import build_report, format_report
+from flowlens.quality import build_report as build_quality_report
+from flowlens.quality import format_report
+from flowlens.snapshot import load_repo
 from flowlens.storage import Store, db_path_for
 
 DEFAULT_DATA_DIR = Path("data")
@@ -152,7 +155,7 @@ def quality(
     path = _existing_db(data_dir, owner, name)
     with Store(path) as store:
         build_model(store, settings, f"{owner}/{name}")
-        report = build_report(store, settings, f"{owner}/{name}")
+        report = build_quality_report(store, settings, f"{owner}/{name}")
     typer.echo(format_report(report))
 
 
@@ -284,6 +287,57 @@ def dora(
     )
     typer.echo(format_dora(report, failures.name))
     typer.echo(f"\nWrote {out} and {failures}")
+
+
+@app.command()
+def report(
+    repo: RepoOption,
+    weeks: Annotated[
+        int, typer.Option(min=1, help="Whole ISO weeks to measure, ending last Monday (UTC).")
+    ] = 26,
+    unit: UnitOption = Unit.issue,
+    items: Annotated[
+        int, typer.Option(min=1, help="Forecast when this many more items will be done.")
+    ] = 40,
+    forecast_weeks: Annotated[
+        int, typer.Option(min=1, help="Forecast how many items the next this-many weeks bring.")
+    ] = 8,
+    history_weeks: Annotated[
+        int, typer.Option(min=1, help="How many recent complete weeks forecasts resample.")
+    ] = 12,
+    out: Annotated[Path, typer.Option(help="Directory for index.html and its data.")] = Path(
+        "site"
+    ),
+    trials: TrialsOption = 10_000,
+    seed: SeedOption = 0,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
+) -> None:
+    """Write a self-contained HTML report (flow, forecast, DORA, PR flow) to <out>/index.html,
+    with the JSON and CSV it was built from in <out>/data/.
+    """
+    settings = _load_config(config, repo)
+    owner, name = parse_repo(repo)
+    path = _existing_db(data_dir, owner, name)
+    with Store(path) as store:
+        build_model(store, settings, f"{owner}/{name}")
+        data = load_repo(store, settings, f"{owner}/{name}")
+    result = build_report(
+        data,
+        weeks=weeks,
+        unit=unit.value,
+        items=items,
+        forecast_weeks=forecast_weeks,
+        history_weeks=history_weeks,
+        trials=trials,
+        seed=seed,
+    )
+    page = write_site(result, out)
+    typer.echo(f"FlowLens report · {result.repo} · {weeks} weeks\n")
+    typer.echo("\n".join(f"  - {bullet}" for bullet in result.bullets))
+    if result.forecast_note:
+        typer.echo(f"\n  ! {result.forecast_note}")
+    typer.echo(f"\nWrote {page} ({page.stat().st_size / 1e6:.1f} MB) and {out / 'data'}/")
 
 
 def _throughput(repo: str, unit: Unit, data_dir: Path, config: Path | None) -> Throughput:

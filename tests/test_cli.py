@@ -383,3 +383,30 @@ def test_dora_without_data_says_to_ingest_first(tmp_path):
 
     assert result.exit_code == 1
     assert "Run `flowlens ingest` first" in result.output
+
+
+def test_report_writes_the_page_and_prints_its_summary(streamlit_data, tmp_path):
+    site = tmp_path / "site"
+
+    result = runner.invoke(
+        cli.app,
+        ["report", "--repo", "streamlit/streamlit", "--items", "2", "--trials", "500",
+         "--out", str(site), "--data-dir", str(streamlit_data)],
+    )  # fmt: skip
+
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert lines[0] == "FlowLens report · streamlit/streamlit · 26 weeks"
+    assert [line[:4] for line in lines[2:5]] == ["  - "] * 3
+    assert lines[4].startswith("  - DORA: ")
+    page = site / "index.html"
+    assert lines[-1].startswith(f"Wrote {page} (") and lines[-1].endswith(f"{site / 'data'}/")
+    assert "streamlit/streamlit" in page.read_text()
+    assert (site / "data" / "dora_failures.csv").exists()
+
+
+def test_report_without_data_says_to_ingest_first(tmp_path):
+    result = runner.invoke(cli.app, ["report", "--repo", "acme/shop", "--data-dir", str(tmp_path)])
+
+    assert result.exit_code == 1
+    assert "Run `flowlens ingest` first" in result.output

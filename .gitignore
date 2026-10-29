@@ -3,6 +3,7 @@
 *.duckdb
 *.duckdb.wal
 data/
+site/
 
 # Python
 .venv/
