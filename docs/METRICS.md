@@ -2,7 +2,7 @@
 
 What `flowlens flow` measures, how, from which GitHub signals, and where each number is weaker than it looks. The code is [src/flowlens/metrics/flow.py](../src/flowlens/metrics/flow.py); every metric has a ground-truth test in [tests/test_flow.py](../tests/test_flow.py).
 
-Coverage figures below are from the demo repo, streamlit/streamlit, over the 26 weeks from 2026-04-27 to 2026-10-25 (run on 2026-10-29). Run `flowlens quality` and `flowlens flow` to get them for another repo.
+Coverage figures below are from the demo repo, streamlit/streamlit, over the 26 weeks from 2026-04-27 to 2026-10-25 (run on 2026-10-29 with one year of history ingested; the forecasting figures use a later two-year ingest). Run `flowlens quality` and `flowlens flow` to get them for another repo.
 
 ## Shared conventions
 
@@ -136,7 +136,75 @@ Durations are in hours. Each stage's median is over the PRs that have both ends;
 - Draft time counts as waiting for review; PR timelines (ready-for-review events) aren't ingested.
 - Stage medians don't add up to the median PR's total time, which is why the share is "of the summed stage medians".
 
-## What the report adds
+## Forecasting
+
+`flowlens forecast` answers two questions with a Monte Carlo simulation over weekly throughput: **when** will N more items be done (`--items`), and **how many** will be done by a date (`--by`). `flowlens backtest` replays the same forecast from past weeks and checks it against what actually happened. The code is [src/flowlens/metrics/forecast.py](../src/flowlens/metrics/forecast.py).
+
+### How it works
+
+1. **Throughput series.** Items delivered per ISO week for one type (`--type issue`, `pr` or `total`), zero weeks included, over every week the ingest fully covers: from the first Monday on or after `--since` (an item finished then was updated then, so it's in the data) to the last complete week before the last ingest.
+2. **History.** The last `--history-weeks` complete weeks (12 by default) that ended by the forecast's start. The start defaults to the next Monday; the week in progress is neither history nor forecast.
+3. **Trials.** 10,000 by default, all drawn at once with numpy (10,000 trials take a few milliseconds). Each trial draws weeks from the history with replacement:
+   - *when*: weeks are drawn until the running total reaches N. A trial that needs k weeks is done before `start + k weeks`, the Monday after its finishing week.
+   - *how many*: the whole weeks from the start through `--by` are drawn and summed. Days after the last whole week aren't counted, which errs on the cautious side.
+4. **Confidence.** For *when*, the 85% date is the earliest date by which 85% of trials had finished. For *how many*, the 85% count is the largest count that 85% of trials reached or beat. So the cautious answer is the **high** percentile for a date and the **low** one for a count: "85% chance of at least 46 items".
+5. **Sensitivity.** Every forecast is repeated with every historical week scaled by 0.8, which answers "what if throughput drops 20%?" (someone leaves, a release freeze) as a shift in the 85% date or count.
+6. **Reproducible.** The random seed defaults to 0, so the same data gives the same forecast; `--seed` changes it.
+
+### Why throughput, not story-point velocity
+
+- **It needs no estimates.** Items finished per week is already in GitHub's history. Points have to be estimated by people, drift over time (point inflation), and mean different things on different teams.
+- **It keeps the variation.** An average velocity turns a noisy history into one number and one date. Resampling real weeks, slow and empty ones included, gives a range with a confidence level, and the backtest can check that range against reality. An average can't be checked that way.
+- **It counts in the backlog's unit.** "When will these 40 issues be done?" is answered in issues, with no conversion from points.
+- Practitioners in flow-based delivery (Daniel Vacanti, Troy Magennis) argue that once items are split to roughly similar sizes, counting them forecasts about as well as summing estimates, without the estimation cost.
+
+### Assumptions
+
+- **The future resembles the recent past:** same team, same process, same mix of work. That's why the history is the *recent* weeks.
+- **Items are roughly similar in size,** or at least the backlog has the same mix of sizes as the history. One huge item counts the same as one typo fix.
+- **Weeks are independent:** a big week doesn't predict the next one.
+- **Scope is fixed.** Work that gets split or added while you wait means more items than N.
+- **The unit matches.** Forecast issues from issue throughput and PRs from PR throughput. `total` counts an issue and the PR that closed it as two items.
+
+### When it breaks
+
+- **Trends and step changes.** The history lags when a team grows, shrinks, or changes how it works: a new AI reviewer, a release freeze, a hiring wave. The backtest shows how much this costs on a given repo.
+- **Bulk clean-ups.** Closing dozens of stale issues in one week inflates issue throughput without delivering anything. A history containing such a week forecasts too much.
+- **Short histories are overconfident.** Resampling a few weeks treats them as the whole truth, so uncertainty about the average itself never enters the forecast. On stationary synthetic data (Poisson, 20 a week), the 85% forecast eight weeks out held 76% of the time with 6 weeks of history, 81% with 12, 86% with 26, and 87% with 200.
+- **Long horizons** compound every problem above.
+- **Very low throughput.** If most weeks deliver nothing, the 85% count is 0 and the 85% date is far away. That answer is honest, but it isn't useful.
+
+### Backtesting
+
+For each horizon (4 and 8 weeks), the backtest takes the latest 52 weeks that have 26 weeks of history before them and a whole horizon after. From each such week (the *origin*) it forecasts "how many in the next H weeks" with 6, 12, and 26 weeks of history. Every history length is scored on the same origins. Each forecast:
+
+- **sees only weeks that ended by its origin.** The forecast function itself filters the history, and a test changes every week after an origin and checks that the forecast from that origin doesn't move;
+- **is compared with the actual count** delivered in those H weeks. It *held* if at least its count was delivered.
+
+Reported per horizon and history length: how often the 50%, 85%, and 95% forecasts held (well calibrated: about 50%, 85%, and 95%; higher means too cautious, lower means overconfident), the mean absolute error of the 50% forecast, and its bias (actual minus forecast; positive means the forecasts ran low).
+
+The *when* forecast needs no separate backtest. "N items done within H weeks" fails exactly when fewer than N were delivered in H weeks, so the two directions share one calibration.
+
+**Look-ahead.** No forecast reads a week after its origin. The one leak left is that past weeks are seen as they look *today*: an issue reopened after an origin counts at its final close, and a label added later (duplicate, wontfix) can remove an item from an earlier week. On streamlit, 37 of the 1,306 issues delivered over the 104 measured weeks (2.8%) were closed, reopened, and closed again in a later week, so at the time they counted in a different week. A merged PR can't be reopened.
+
+### On the demo repo
+
+streamlit/streamlit, 104 measured weeks (2024-10-28 to 2026-10-25), 52 origins per horizon, 10,000 trials per forecast. How often the 85% forecast held:
+
+| History | Issues, 4 weeks | Issues, 8 weeks | PRs, 4 weeks | PRs, 8 weeks |
+|---|---:|---:|---:|---:|
+| 6 weeks | 69% | 65% | 79% | 77% |
+| 12 weeks (default) | 71% | 77% | 79% | 79% |
+| 26 weeks | 79% | 83% | 83% | 77% |
+
+- **The forecast is overconfident here.** No configuration reaches 85%, and short histories are worst: issues, 4 weeks out, with 6 weeks of history held 69% of the time. On this repo, the 95% forecast (which held 85–92% with 12 weeks of history) is the one to quote as an "85% sure" commitment.
+- **Misses come in runs after the pace changes:** the December holidays; March to May 2026, when PR throughput fell after a strong February (about 160 PRs per four weeks); and September 2026, when issue histories still held the July backlog clean-up (about 100 issues closed in four weeks) and forecast too many.
+- **Forecasts ran low on average.** The p50 bias is positive everywhere (+2 to +7 issues, +10 to +20 PRs) because throughput rose over the period, with PRs at 66.7 a week in October 2026 against 27 a week in late 2025.
+- **More history helps issues** (79% and 83% with 26 weeks), whose throughput is noisy week to week, but not PRs, whose pace has trended; a longer history only remembers an older pace. The p50's typical miss is a third to almost half of the actual count for issues, and about a quarter for PRs.
+
+`flowlens backtest` reruns this for any repo, so the right history length and confidence level can be chosen from that repo's own record rather than from a default.
+
+## What the reports add
 
 `flowlens flow` prints notes under the table when the data is thin: issue cycle-time coverage, merged PRs with no human review, a window that starts before the ingested history, and the history caveat. The JSON in `data/out/flow_<owner>__<name>.json` holds every series: lead and cycle summaries per type and group, weekly throughput, daily WIP, cumulative flow per type, the aging list, PR flow with its monthly breakdown, coverage counts, and the notes.
 
@@ -147,3 +215,12 @@ Durations are in hours. Each stage's median is over the PRs that have both ends;
 - **exactly**, against brute-force loops over the same items: percentiles per type and group, histogram counts, every week's throughput, every day's WIP and cumulative flow, the aging list, and PR stage medians and bottleneck;
 - **statistically**, on a year at high volume: cycle-time p50/p85/p95 within 10% of the lognormal's true quantiles, throughput within 5% of the arrival rates, mean WIP within 5% of Little's law (L = λW), PR stage medians within 10%, and the right bottleneck;
 - **edge cases** by hand: no items, all items in progress, items finished the day they started, weeks with zero throughput, window boundaries, excluded items, abandoned PRs, never-started issues, starts dated after finishes, reviews after the merge.
+
+Forecasts are tested in [tests/test_forecast.py](../tests/test_forecast.py):
+
+- **exactly**: constant throughput leaves nothing to chance, so 40 items at 5 a week take exactly 8 weeks in every trial, 8 weeks deliver exactly 40, and a 20% drop gives exactly 10 weeks and 32 items;
+- **against enumeration**: for tiny histories, every possible sequence of weeks is listed, and the simulated distributions match the exact probabilities within 1%;
+- **by definition**: the 85% date is the first one 85% of trials finished by, the 85% count is the highest one 85% of trials reached, and p50 ≤ p85 ≤ p95 for dates (reversed for counts);
+- **for leaks**: changing every week after an origin leaves that origin's backtest forecast unchanged;
+- **for calibration**: on 800 weeks of stationary data, the 85% forecast with a long history holds 85% ± 5% of the time, and a 6-week history is measurably overconfident;
+- **for speed and repeatability**: 10,000 trials run in well under a second, and a fixed seed repeats exactly.

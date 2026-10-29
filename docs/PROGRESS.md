@@ -95,3 +95,62 @@
   - The quality report still counts the whole ingested history, not the flow window
 - Manual steps for Arnab: none
 - Next: Day 4, Monte Carlo "when" and "how many" forecasts sampled from the weekly throughput series, with a backtest
+
+## Day 4 — 2026-10-29
+- Done: Monte Carlo forecasts, the backtest, `flowlens forecast` and `flowlens backtest`, and the Forecasting section of [METRICS.md](METRICS.md#forecasting)
+  - `metrics/forecast.py`: `when` (weeks until N items are done, as dates) and `how_many` (items done by a date), both resampling the last `history_weeks` complete weeks with replacement, zero weeks included, vectorised with numpy (10,000 trials in about 1 ms for 40 items, 27 ms for 2,000). 50/85/95% answers, the full distribution, and a scaled run for a 20% throughput drop
+  - `backtest`: from each of the latest 52 weeks with 26 weeks of history before and a whole horizon after, forecast 4 and 8 weeks ahead with 6, 12, and 26 weeks of history, then score the 50/85/95% forecasts against what was delivered (held rate, p50 MAE, p50 bias). 312 forecasts in 0.2 s
+  - CLI: `flowlens forecast --repo owner/name --items 40` or `--by 2026-12-31`, and `flowlens backtest --repo owner/name`, each with `--type issue|pr|total`. Both write JSON to `data/out/` for the dashboard
+  - Streamlit re-ingested back to 2024-10-28 so that the backtest has 104 measured weeks: 2,811 issues, 6,846 PRs, 47 releases, 694 deployments, 36 release-build runs; 349 API calls (GraphQL cost 482), 19 min
+  - 292 offline tests (254 on Day 3): exact results under constant throughput, distributions matched against full enumeration for tiny histories, percentile definitions, ordering, fixed-seed repeatability, speed, a look-ahead test (changing every week after an origin leaves that origin's forecast unchanged), and calibration on stationary data. Ruff clean
+  - Demo run, streamlit/streamlit, as of 2026-10-29 18:34 UTC:
+    ```
+    Forecast: 40 issues from 2026-11-02 (12 weeks of history, 10,000 trials)
+      history: 2026-08-03 → 2026-10-25, 12.8 issues/week (min 6, max 21, 0 empty weeks)
+      50%: by 2026-11-30 | 85%: by 2026-11-30 | 95%: by 2026-12-07
+      If throughput drops 20%: 85% by 2026-12-07 (1 week later)
+
+    Forecast: issues done from 2026-11-02 through 2026-12-27 (8 whole weeks; 12 weeks of history, 10,000 trials)
+      50%: at least 102 | 85%: at least 89 | 95%: at least 81
+      If throughput drops 20%: 85%: at least 71 (18 fewer)
+
+    Forecast: 200 PRs from 2026-11-02 (12 weeks of history, 10,000 trials)
+      50%: by 2026-12-07 | 85%: by 2026-12-14 | 95%: by 2026-12-21
+      If throughput drops 20%: 85% by 2026-12-21 (1 week later)
+    ```
+- Backtest calibration (streamlit, 52 weekly origins per horizon, origins 2025-09-08 to 2026-09-28):
+
+  | Type | Horizon | History | 50% held | 85% held | 95% held | p50 MAE | p50 bias | Mean actual |
+  |---|---|---|---:|---:|---:|---:|---:|---:|
+  | issues | 4 weeks | 6 weeks | 52% | 69% | 83% | 23.5 | +2.0 | 52.5 |
+  | issues | 4 weeks | 12 weeks | 56% | 71% | 85% | 19.9 | +3.8 | 52.5 |
+  | issues | 4 weeks | 26 weeks | 60% | 79% | 90% | 17.2 | +5.0 | 52.5 |
+  | issues | 8 weeks | 6 weeks | 46% | 65% | 73% | 48.0 | +1.9 | 103.8 |
+  | issues | 8 weeks | 12 weeks | 48% | 77% | 87% | 33.7 | +6.2 | 103.8 |
+  | issues | 8 weeks | 26 weeks | 50% | 83% | 87% | 29.8 | +7.1 | 103.8 |
+  | PRs | 4 weeks | 6 weeks | 71% | 79% | 85% | 32.5 | +9.9 | 123.6 |
+  | PRs | 4 weeks | 12 weeks | 69% | 79% | 92% | 34.5 | +11.8 | 123.6 |
+  | PRs | 4 weeks | 26 weeks | 65% | 83% | 88% | 33.8 | +13.0 | 123.6 |
+  | PRs | 8 weeks | 6 weeks | 63% | 77% | 83% | 61.8 | +17.5 | 237.9 |
+  | PRs | 8 weeks | 12 weeks | 60% | 79% | 87% | 59.7 | +20.2 | 237.9 |
+  | PRs | 8 weeks | 26 weeks | 58% | 77% | 85% | 52.1 | +17.8 | 237.9 |
+
+  - The 85% forecast is overconfident on streamlit: 65–83%, never 85%. With the default 12 weeks of history, the 95% forecast is the one that holds about 85% of the time (85–92%)
+  - Misses come in runs after the pace changes: the December holidays, the spring 2026 PR slowdown after a strong February, and September 2026, when issue histories still held the July backlog clean-up
+  - Bias is positive throughout because throughput rose over the period (PRs 27 a week in late 2025, 66.7 in October 2026), so the forecasts ran low on average
+  - 26 weeks of history is the best setting for issues (79% and 83% held); for PRs no history length fixes a trend
+  - Synthetic control: on stationary Poisson data, the same method holds 86% with 26 weeks of history and 76% with 6 (8 weeks out), so part of the gap is the method (resampling ignores uncertainty in the average) and part is streamlit changing pace
+- Decisions: confidence means the same in both directions. The 85% date is the earliest date by which 85% of trials finished; the 85% count is the largest count 85% of trials reached. Dates take the high percentile, counts the low one
+  - Forecasts start at the next Monday after the last ingest, and the history is the complete weeks before the start; the week in progress is in neither. *How many* counts whole weeks only, and dates are the Monday after the finishing week
+  - The throughput series covers only weeks the ingest fully covers: from the first Monday on or after `--since` (anything finished then was updated then) to the last complete week
+  - Unit per run (`--type`, default `issue`), never a mixed count; `total` is there but double-counts an issue and its PR
+  - The 20% drop scales every historical week by 0.8: a systematic slowdown, not random lost items
+  - The default seed is 0, so the same data gives the same forecast; the backtest seeds each forecast from (seed, horizon, history, origin)
+  - No look-ahead by construction: `how_many` and `when` filter the history to weeks that ended by the start, and the backtest calls them unchanged
+  - The *when* direction has no separate backtest: "N items within H weeks" fails exactly when fewer than N were delivered, so both directions share one calibration
+- Known gaps: past weeks are seen as they look today. 37 of 1,306 delivered issues (2.8%) were reopened and closed again in a later week, and a label added later can exclude an item from an earlier week. The forecasts themselves never read a later week
+  - No trend or regime awareness: a step change hurts until it ages out of the history window
+  - Items are assumed similar in size; size isn't used
+  - The default history stays at 12 weeks as the brief set it, though streamlit's own backtest favours 26 for issues
+- Manual steps for Arnab: none
+- Next: Day 5, DORA metrics (deployment frequency, lead time for changes, change failure rate, recovery time)
