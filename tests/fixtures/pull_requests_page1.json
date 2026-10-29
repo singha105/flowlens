@@ -1,0 +1,156 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4996,
+      "resetAt": "2026-10-29T05:47:49Z"
+    },
+    "repository": {
+      "pullRequests": {
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMC0xN1QwMDowOToyMFrPAAAAARjhgTk="
+        },
+        "nodes": [
+          {
+            "number": 519,
+            "title": "Improved speedups",
+            "url": "https://github.com/pallets/markupsafe/pull/519",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-03-10T19:21:53Z",
+            "updatedAt": "2026-10-21T00:09:06Z",
+            "mergedAt": null,
+            "closedAt": "2026-10-06T15:47:27Z",
+            "additions": 153,
+            "deletions": 108,
+            "baseRefName": "main",
+            "author": {
+              "login": "thewhaleking",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-03-10T19:14:49Z",
+                    "committedDate": "2026-03-10T19:14:49Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 539,
+            "title": "Add line for change log",
+            "url": "https://github.com/pallets/markupsafe/pull/539",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-10-05T14:03:16Z",
+            "updatedAt": "2026-10-20T00:09:11Z",
+            "mergedAt": null,
+            "closedAt": "2026-10-05T14:21:53Z",
+            "additions": 1,
+            "deletions": 0,
+            "baseRefName": "main",
+            "author": {
+              "login": "ali33600",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-10-05T14:01:13Z",
+                    "committedDate": "2026-10-05T14:01:13Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 534,
+            "title": "remove updating release",
+            "url": "https://github.com/pallets/markupsafe/pull/534",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-10-02T02:43:09Z",
+            "updatedAt": "2026-10-17T00:09:21Z",
+            "mergedAt": "2026-10-02T02:52:47Z",
+            "closedAt": "2026-10-02T02:52:47Z",
+            "additions": 2,
+            "deletions": 32,
+            "baseRefName": "stable",
+            "author": {
+              "login": "davidism",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-10-02T02:42:50Z",
+                    "committedDate": "2026-10-02T02:42:50Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 535,
+            "title": "add zizmor to scan workflows",
+            "url": "https://github.com/pallets/markupsafe/pull/535",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-10-02T03:38:58Z",
+            "updatedAt": "2026-10-17T00:09:20Z",
+            "mergedAt": "2026-10-02T04:00:16Z",
+            "closedAt": "2026-10-02T04:00:16Z",
+            "additions": 73,
+            "deletions": 23,
+            "baseRefName": "stable",
+            "author": {
+              "login": "davidism",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-10-02T03:37:15Z",
+                    "committedDate": "2026-10-02T03:57:49Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}

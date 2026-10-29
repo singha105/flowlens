@@ -1,0 +1,26 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4987,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": null
+  },
+  "errors": [
+    {
+      "type": "NOT_FOUND",
+      "path": [
+        "repository"
+      ],
+      "locations": [
+        {
+          "line": 4,
+          "column": 3
+        }
+      ],
+      "message": "Could not resolve to a Repository with the name 'singha105/no-such-repo-flowlens'."
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4991,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "issues": {
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMC0xN1QwMDowOToxMVrO6vxg-g=="
+        },
+        "nodes": [
+          {
+            "number": 533,
+            "title": "`striptags` should remove unclosed tags",
+            "url": "https://github.com/pallets/markupsafe/issues/533",
+            "state": "CLOSED",
+            "stateReason": "NOT_PLANNED",
+            "createdAt": "2026-10-01T14:51:43Z",
+            "updatedAt": "2026-10-18T00:09:49Z",
+            "closedAt": "2026-10-03T13:45:10Z",
+            "author": {
+              "login": "davidism",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "assignees": {
+              "nodes": [
+                {
+                  "login": "davidism"
+                }
+              ]
+            }
+          },
+          {
+            "number": 517,
+            "title": "Enable CI Support for ppc64le (IBM Power) Architecture",
+            "url": "https://github.com/pallets/markupsafe/issues/517",
+            "state": "CLOSED",
+            "stateReason": "COMPLETED",
+            "createdAt": "2026-02-16T11:50:34Z",
+            "updatedAt": "2026-10-17T00:09:12Z",
+            "closedAt": "2026-10-02T13:26:49Z",
+            "author": {
+              "login": "PankhudiJ17",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "assignees": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 515,
+            "title": "Add Android and iOS wheels",
+            "url": "https://github.com/pallets/markupsafe/issues/515",
+            "state": "CLOSED",
+            "stateReason": "COMPLETED",
+            "createdAt": "2026-02-14T21:43:02Z",
+            "updatedAt": "2026-10-17T00:09:11Z",
+            "closedAt": "2026-10-02T13:42:03Z",
+            "author": {
+              "login": "timrid",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "assignees": {
+              "nodes": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}

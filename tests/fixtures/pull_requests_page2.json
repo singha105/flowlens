@@ -1,0 +1,156 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4988,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "pullRequests": {
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMC0xN1QwMDowOToxNlrOw9Q-qw=="
+        },
+        "nodes": [
+          {
+            "number": 510,
+            "title": "Don't run pytest-run-parallel twice",
+            "url": "https://github.com/pallets/markupsafe/pull/510",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2025-09-29T13:56:59Z",
+            "updatedAt": "2026-10-17T00:09:19Z",
+            "mergedAt": null,
+            "closedAt": "2026-10-02T13:08:12Z",
+            "additions": 1,
+            "deletions": 1,
+            "baseRefName": "stable",
+            "author": {
+              "login": "crusaderky",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2025-09-29T13:55:04Z",
+                    "committedDate": "2025-09-29T13:55:04Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 514,
+            "title": "Build armv7l wheels",
+            "url": "https://github.com/pallets/markupsafe/pull/514",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-02-09T10:42:09Z",
+            "updatedAt": "2026-10-17T00:09:18Z",
+            "mergedAt": "2026-10-02T13:14:31Z",
+            "closedAt": "2026-10-02T13:14:31Z",
+            "additions": 3,
+            "deletions": 2,
+            "baseRefName": "stable",
+            "author": {
+              "login": "Lauszus",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-02-09T10:41:20Z",
+                    "committedDate": "2026-10-02T13:12:52Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 518,
+            "title": "Build ppc64le wheels",
+            "url": "https://github.com/pallets/markupsafe/pull/518",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-02-16T12:03:02Z",
+            "updatedAt": "2026-10-17T00:09:17Z",
+            "mergedAt": "2026-10-02T13:26:41Z",
+            "closedAt": "2026-10-02T13:26:41Z",
+            "additions": 7,
+            "deletions": 3,
+            "baseRefName": "stable",
+            "author": {
+              "login": "PankhudiJ17",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-02-16T10:49:04Z",
+                    "committedDate": "2026-10-02T13:22:22Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 516,
+            "title": "Build Android and iOS wheels",
+            "url": "https://github.com/pallets/markupsafe/pull/516",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-02-14T21:48:43Z",
+            "updatedAt": "2026-10-17T00:09:16Z",
+            "mergedAt": "2026-10-02T13:41:46Z",
+            "closedAt": "2026-10-02T13:41:47Z",
+            "additions": 24,
+            "deletions": 3,
+            "baseRefName": "stable",
+            "author": {
+              "login": "timrid",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "commits": {
+              "nodes": [
+                {
+                  "commit": {
+                    "authoredDate": "2026-02-14T21:11:08Z",
+                    "committedDate": "2026-10-02T13:33:28Z"
+                  }
+                }
+              ]
+            },
+            "reviews": {
+              "nodes": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}

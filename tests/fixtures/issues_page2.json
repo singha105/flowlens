@@ -1,0 +1,84 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4990,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "issues": {
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0xMC0xNlQwMDowODoyOVrO-2MBcg=="
+        },
+        "nodes": [
+          {
+            "number": 530,
+            "title": "Please publish Python 3.15 wheels on PyPI",
+            "url": "https://github.com/pallets/markupsafe/issues/530",
+            "state": "CLOSED",
+            "stateReason": "COMPLETED",
+            "createdAt": "2026-09-04T07:39:37Z",
+            "updatedAt": "2026-10-17T00:09:10Z",
+            "closedAt": "2026-10-02T13:28:32Z",
+            "author": {
+              "login": "befeleme",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "assignees": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 531,
+            "title": "[rejected AI] Markup.format escapes a plain string returned by __html__",
+            "url": "https://github.com/pallets/markupsafe/issues/531",
+            "state": "CLOSED",
+            "stateReason": "NOT_PLANNED",
+            "createdAt": "2026-10-01T11:05:20Z",
+            "updatedAt": "2026-10-16T00:08:30Z",
+            "closedAt": "2026-10-01T12:48:05Z",
+            "author": {
+              "login": "SashaMIT",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": [
+                {
+                  "name": "rejected AI"
+                }
+              ]
+            },
+            "assignees": {
+              "nodes": []
+            }
+          },
+          {
+            "number": 521,
+            "title": "Performance regression in striptags",
+            "url": "https://github.com/pallets/markupsafe/issues/521",
+            "state": "CLOSED",
+            "stateReason": "COMPLETED",
+            "createdAt": "2026-04-07T12:14:35Z",
+            "updatedAt": "2026-10-16T00:08:29Z",
+            "closedAt": "2026-10-01T21:53:12Z",
+            "author": {
+              "login": "MohamedKasem99",
+              "__typename": "User"
+            },
+            "labels": {
+              "nodes": []
+            },
+            "assignees": {
+              "nodes": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}
