@@ -1,6 +1,6 @@
-# Flow metrics
+# Metrics
 
-What `flowlens flow` measures, how, from which GitHub signals, and where each number is weaker than it looks. The code is [src/flowlens/metrics/flow.py](../src/flowlens/metrics/flow.py); every metric has a ground-truth test in [tests/test_flow.py](../tests/test_flow.py).
+What `flowlens flow`, `forecast`, `backtest`, and `dora` measure, how, from which GitHub signals, and where each number is weaker than it looks. The flow metrics are in [src/flowlens/metrics/flow.py](../src/flowlens/metrics/flow.py), with a ground-truth test for each in [tests/test_flow.py](../tests/test_flow.py); forecasting and DORA have sections of their own below.
 
 Coverage figures below are from the demo repo, streamlit/streamlit, over the 26 weeks from 2026-04-27 to 2026-10-25 (run on 2026-10-29 with one year of history ingested; the forecasting figures use a later two-year ingest). Run `flowlens quality` and `flowlens flow` to get them for another repo.
 
@@ -204,6 +204,104 @@ streamlit/streamlit, 104 measured weeks (2024-10-28 to 2026-10-25), 52 origins p
 
 `flowlens backtest` reruns this for any repo, so the right history length and confidence level can be chosen from that repo's own record rather than from a default.
 
+## DORA
+
+`flowlens dora --repo owner/name --weeks 26` computes DORA's four keys over the last `--weeks` whole ISO weeks, from the deploys `deployment_source` names. It prints each with its band and writes the records behind every number: `data/out/dora_<owner>__<name>.json` holds every deploy in the window with the PRs it shipped and the failure signals against it, every shipped PR with its lead time, and every signal that didn't count with the reason; `data/out/dora_failures_<owner>__<name>.csv` lists each failure that counted. The code is [src/flowlens/metrics/dora.py](../src/flowlens/metrics/dora.py).
+
+DORA's own definitions are in its [metrics guide](https://dora.dev/guides/dora-metrics/), which since 2024 also lists a fifth metric, deployment rework rate (unplanned deploys caused by a production incident). FlowLens doesn't compute it yet.
+
+### Which deploy shipped which PR
+
+Everything except deployment frequency needs to know what each deploy contained. At ingest time, FlowLens compares each successful deploy's commit with the one before it through the compare API (`GET /repos/{owner}/{repo}/compare/{base}...{head}`, every page): for releases, consecutive release tag commits, as the brief asked. The commits in that range are what the deploy shipped. Commits never change, so a range is fetched once and kept in the `compares` and `compare_commits` tables.
+
+A merged PR shipped in the **first** deploy whose range holds its merge commit, or a commit whose subject names it the way squash merges and cherry-picks do (`Title (#123)`, `Merge pull request #123`). The result is the `deployment_changes` model table, one row per shipped PR with the commit that carried it and how it was matched. A fix cherry-picked into a patch release ships with the patch, not with the next minor release that carries its original merge commit.
+
+On streamlit, the 46 compares between its 47 releases from November 2024 on hold 4,380 commits, fetched during an incremental ingest of 82 API calls. They matched 4,208 PRs, 4,091 by merge commit and 117 through a cherry-pick naming them, which covers 4,196 of the 4,371 PRs merged to `develop` since the first release. The other 175 all merged in October 2026, after 1.66 was cut, and are waiting for 1.67.
+
+### Deployment frequency
+
+Successful deploys in the window, per week and per day, the median gap between consecutive deploys, and how many weeks had none. A failed deployment status doesn't count here: nothing reached production. Banded on deploys per week.
+
+### Lead time for changes
+
+From a PR's first commit (its author date; the PR's opening when there's none) to the deploy that shipped it, for PRs shipped by deploys in the window. p50 and p85, nearest-rank, plus the split:
+
+- **coding time**: first commit to merge;
+- **waiting to deploy**: merge to the deploy;
+- **waiting share**: total waiting over total lead time across all shipped PRs. The p50s of the two parts don't add up to the p50 of the whole, so the share is what says where the time goes.
+
+Excluded PRs (bots, by default) are left out and counted separately. PRs merged in the window that no deploy shipped are reported, not measured: those merged to the main line (the branch most shipped PRs merged into) are waiting for a deploy, and those merged into other branches reach production, if at all, through another PR. Banded on the p50 in hours.
+
+### Change failure rate
+
+The share of deploys in the window (any status) that a failure signal counts against. DORA asks how often a deployment "requires immediate intervention"; GitHub has no record of that, so FlowLens reads it from four signals, each of which must fire within `dora.failure_window_hours` (default 72) after the deploy:
+
+- **A merged revert PR** (title starting with "Revert") counts against the deploy that shipped the PR it reverts. FlowLens finds that PR from a number in the title (`#123`, `PR-123`), a quoted title (`Revert "Title"`, what GitHub's revert button writes), or "This reverts commit …" in the revert's squash commit. A revert opened before its PR shipped, or of a PR no deploy shipped, isn't a production failure; an unidentified revert falls back to the rule for labels.
+- **A merged PR labeled hotfix or incident** (`labels:` in flowlens.yaml) counts against the last successful deploy before it was opened.
+- **An issue labeled hotfix or incident** counts the same way, from when it was opened.
+- **A failed deployment status** (deployments or workflow sources) counts against that deploy.
+
+Every signal is kept, with the deploy it counts against or the reason it doesn't: outside the window, before the first deploy, reverting a PR before it shipped, or reverting one no deploy shipped. Banded on the rate.
+
+### Failed deployment recovery time
+
+From a failed deploy to the first fix for any of its signals: the deploy that ships the revert or the hotfix PR, or the deploy that ships an incident issue's linked PR (closing keyword, manual link, or the PR that closed it). An incident with no linked PR recovers when the issue closes. A failed deployment status recovers at the next successful deploy. Failures with no fix shipped yet are counted as not recovered and left out of the median.
+
+A deploy that ships a fix can fail in turn. That's a failure of its own with its own recovery: in a hotfix chain (v1 fails, its hotfix ships in v2, v2 fails, the next hotfix ships in v3), v1 recovers at v2 and v2 at v3. The signals can't tell whether v2's failure is the same problem, so FlowLens doesn't chain them. Banded on the median in hours.
+
+### Performance bands
+
+The elite/high/medium/low limits live in `flowlens.yaml` under `dora.bands`, each with the report it comes from; FlowLens has none built in. A metric gets the best band whose limit it meets, otherwise low. The shipped values:
+
+| Metric | Elite | High | Medium | Low | Source |
+|---|---|---|---|---|---|
+| Deploys per week, at least | 7 (on demand) | 1 (daily to weekly) | 0.23 (weekly to monthly) | less | 2024 report |
+| Lead time p50, at most | 24h | 1 week | 1 month | longer | 2024 report |
+| Change failure rate, at most | 5% | 10% | 15% | more (64% typical) | 2023 report |
+| Recovery time median, at most | 1 hour | 1 day | 1 week | longer | 2023 report |
+
+Where they come from, and why they're approximate:
+
+- **The latest report has no bands.** The [2025 DORA report](https://dora.dev/research/2025/dora-report/) (State of AI-assisted Software Development) replaced the four performance levels with seven team archetypes ([RedMonk's summary](https://redmonk.com/rstephens/2025/12/18/dora2025/)). The most recent published levels are in the [2024 Accelerate State of DevOps Report](https://dora.dev/research/2024/dora-report/) and the [2023 one](https://dora.dev/research/2023/dora-report/). The values above were checked against Octopus Deploy's tables of the [2024](https://octopus.com/blog/2024-devops-performance-clusters) and [2023](https://octopus.com/blog/software-delivery-performance-clusters-2023) clusters; the report PDFs themselves weren't read here.
+- **DORA's levels are clusters, not cut-offs.** Teams were grouped on all four metrics at once, so a single metric can sit between clusters or overlap two. Banding each metric alone is FlowLens's reading, not DORA's.
+- **The 2024 clusters can't be read one metric at a time for failures and recovery.** In 2024, medium's change failure rate (10%) was lower than high's (20%), and high and medium shared "less than one day" to recover. The 2023 clusters are in order (5%, 10%, 15%, 64%; under an hour, under a day, a day to a week, one to six months), so those two metrics use 2023.
+- **A cluster's change failure rate is a typical value.** The bands use it as an upper limit.
+- **"On demand" isn't countable.** Elite deployment frequency is taken as daily or more.
+
+Change the limits or the window in `flowlens.yaml`; the next run picks them up. Verify against the latest DORA report before quoting a band.
+
+### How GitHub signals approximate DORA, and where they don't
+
+- **A release isn't always a production deploy.** For a library like streamlit, a release is a publish to PyPI and users upgrade when they choose, so "deployed" means "available". For a service, a release may be cut long before or after it reaches production; prefer `deployments` or a deploy workflow there. FlowLens deploys from exactly one source.
+- **First commit isn't when the work started.** It's the author date of the PR's first commit, which squashes and `--reset-author` move. On streamlit it's a median of 35 seconds before the PR opens, so coding time before the PR is invisible.
+- **Labels are only as good as the triage.** An incident label applied late, or to reports that aren't production failures, moves the rate. A team that never labels has a change failure rate of zero.
+- **Failure signals are attributed by time, not cause** (reverts aside). An incident counts against the last deploy before it was opened, even when it names an older release.
+- **The window decides a lot.** Regressions reported a week after a release are outside a 72-hour window. Deploys less than one window old are listed as still inside it, because their rate may still rise.
+- **Recovery is "the fix shipped", not "service restored".** A library's users are restored when they upgrade, which no repository records. The issue-closing fallback measures the fix being merged, not deployed.
+- **Bots are excluded** from lead time and as failure signals, as everywhere in FlowLens. Their PRs still ship.
+- **History reaches back only as far as the ingest.** The first deploy has nothing to compare with, so what it shipped is unknown, and the report says so per deploy.
+
+### On the demo repo
+
+streamlit/streamlit, releases, 26 weeks from 2026-04-27 to 2026-10-25, run on 2026-10-29:
+
+```
+DORA (26 weeks, 2026-04-27 → 2026-10-25, deployment source: releases)
+Deployment frequency: 0.54/week (median gap 12.9d)                band: medium
+  14 deploys, 0.08/day; 14 of 26 weeks had none
+Lead time for changes: p50 12.5d, p85 27.7d                       band: medium
+  864 PRs (plus 679 excluded, such as bots): coding p50 1.3d, waiting to deploy p50 8.4d; waiting is 60% of all lead time
+  not deployed: 65 PRs merged to develop in the window, 12 into other branches
+Change failure rate: 50% (7 of 14 deploys; see dora_failures_streamlit__streamlit.csv)  band: low
+Failed deployment recovery time: median 14.9d (6 recovered, 1 not yet)  band: low
+```
+
+- **Most lead time is waiting for a release.** 60% of the time from first commit to release is spent merged and waiting; coding takes a p50 of 1.3 days against 8.4 days waiting. Releasing more often would shorten lead time more than faster coding would.
+- **The failure rate is a statement about the window.** The 7 failed releases come from 15 `type:regression` issues opened within 72 hours (streamlit has no incident or hotfix label, so regressions stand in). With a 24-hour window it's 3 of 14 (21%); with 7 days, 11 of 14 (79%). Another 24 regression reports, opened between the window's start and the run, came more than 72 hours after the release before them.
+- **Time attribution blames the latest release.** Of the 7 counted regressions whose titles name a version, 5 name the release they count against; the other 2 count against 1.59.2 but name 1.59.0.
+- **Recovery waits for the next release.** Fixes ship in the next minor release (two to six weeks) unless a patch release carries them: 45 hours for 1.59.0, fixed in 1.59.1, against 30 to 39 days for 1.57.0 and 1.58.0.
+- **No revert counted.** Over two years 8 revert PRs merged, and FlowLens identified the reverted PR for 5. None counted: 3 were opened before the change they revert shipped, 1 reverted a PR no release shipped, 2 came after the window, and 2 came before the first release in the history.
+
 ## What the reports add
 
 `flowlens flow` prints notes under the table when the data is thin: issue cycle-time coverage, merged PRs with no human review, a window that starts before the ingested history, and the history caveat. The JSON in `data/out/flow_<owner>__<name>.json` holds every series: lead and cycle summaries per type and group, weekly throughput, daily WIP, cumulative flow per type, the aging list, PR flow with its monthly breakdown, coverage counts, and the notes.
@@ -224,3 +322,11 @@ Forecasts are tested in [tests/test_forecast.py](../tests/test_forecast.py):
 - **for leaks**: changing every week after an origin leaves that origin's backtest forecast unchanged;
 - **for calibration**: on 800 weeks of stationary data, the 85% forecast with a long history holds 85% ± 5% of the time, and a 6-week history is measurably overconfident;
 - **for speed and repeatability**: 10,000 trials run in well under a second, and a fixed seed repeats exactly.
+
+DORA is tested on synthetic deploy histories built event by event in [tests/test_dora.py](../tests/test_dora.py), and the change mapping in [tests/test_changes.py](../tests/test_changes.py):
+
+- **known answers**: a revert counted against the deploy that shipped what it reverts (not the latest one) and recovered when the revert ships; a hotfix chain counted as two failures with recoveries of 20 and 30 hours; a week with no deploys counted as zero; a PR that no deploy shipped reported, not measured;
+- **exact arithmetic**: lead time, coding, and waiting per PR, nearest-rank p50/p85, the waiting share, deploys per week and per day, median gaps;
+- **edges**: a signal exactly at the window edge counts and one second later doesn't; reverts before shipping, of unshipped PRs, and outside the window; failed statuses; incidents fixed by a deploy, by closing, or not yet; signals before the first deploy, on excluded items, or on unmerged PRs;
+- **matching**: merge commits, cherry-picks naming a PR, the first deploy winning, revert titles in four formats, and every per-deploy range status;
+- **bands and config**: at-least and at-most limits at their edges, and validation of every `dora` setting.

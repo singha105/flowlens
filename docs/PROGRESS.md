@@ -154,3 +154,42 @@
   - The default history stays at 12 weeks as the brief set it, though streamlit's own backtest favours 26 for issues
 - Manual steps for Arnab: none
 - Next: Day 5, DORA metrics (deployment frequency, lead time for changes, change failure rate, recovery time)
+
+## Day 5 — 2026-10-29
+- Done: DORA metrics, traceable to the deploys, PRs, and issues behind them; `flowlens dora`; the DORA section of [METRICS.md](METRICS.md#dora)
+  - Change mapping: ingest now compares each successful deploy from `deployment_source` with the one before it (`GET /repos/{o}/{r}/compare/{base}...{head}`, every page) and keeps the commits in new `compares` and `compare_commits` tables, fetched once since commits never change. `model/changes.py` builds the `deployment_changes` model table: each merged PR and the first deploy whose range holds its merge commit or a commit naming it (`Title (#123)`, so cherry-picks into patch releases count)
+  - `metrics/dora.py`: deployment frequency (per week and day, median gap, empty weeks), lead time for changes (first commit → the deploy that shipped it, p50/p85, coding and waiting-to-deploy split, waiting share), change failure rate (reverts, hotfix/incident labels on PRs and issues, failed deployment statuses, within `dora.failure_window_hours`, default 72), and failed deployment recovery time (to the deploy that ships the fix, or the incident closing)
+  - Bands live in `flowlens.yaml` under `dora.bands`, each with its source; nothing is built in. Defaults: deploy frequency and lead time from the 2024 Accelerate State of DevOps Report clusters, change failure rate and recovery from the 2023 clusters, all labeled approximate (sources and reasons in METRICS.md)
+  - `flowlens dora --repo owner/name --weeks 26` prints the four keys with bands, the failed deploys with each signal and how they recovered, and the signals that didn't count with the reason; it writes `data/out/dora_<owner>__<name>.json` (every deploy, shipped PR, and signal) and `data/out/dora_failures_<owner>__<name>.csv`
+  - 361 offline tests (292 on Day 4). Synthetic histories with known answers: a revert counted against the deploy that shipped what it reverts, a hotfix chain, a week with no deploys, a PR that shipped in no deploy, failed statuses, incidents fixed by a deploy or by closing, window edges, revert title formats, every per-deploy range status, band edges, and config validation. Ruff clean
+  - Streamlit: incremental ingest with the compare ranges, 82 API calls in 74 s: 46 compares, 4,380 commits, all complete. 4,208 PRs matched to the release that shipped them (4,091 by merge commit, 117 through cherry-picks), every PR merged to `develop` since the first release except the 175 merged after 1.66 was cut. Lead time p50/p85 and the deploy count were checked against independent SQL over the same tables
+  - Demo run, streamlit/streamlit, as of 2026-10-29 18:53 UTC (the last ingest):
+    ```
+    DORA (26 weeks, 2026-04-27 → 2026-10-25, deployment source: releases)
+    Deployment frequency: 0.54/week (median gap 12.9d)                band: medium
+      14 deploys, 0.08/day; 14 of 26 weeks had none
+    Lead time for changes: p50 12.5d, p85 27.7d                       band: medium
+      864 PRs (plus 679 excluded, such as bots): coding p50 1.3d, waiting to deploy p50 8.4d; waiting is 60% of all lead time
+      not deployed: 65 PRs merged to develop in the window, 12 into other branches
+    Change failure rate: 50% (7 of 14 deploys; see dora_failures_streamlit__streamlit.csv)  band: low
+    Failed deployment recovery time: median 14.9d (6 recovered, 1 not yet)  band: low
+    ```
+    The 7 failed releases (1.57.0, 1.58.0, 1.59.0, 1.59.2, 1.61.0, 1.64.0, 1.66.0) and their 15 regression issues are listed in the output and the CSV, each with how long after the release it was opened and what fixed it
+- Observations:
+  1. 60% of lead time is waiting for a release, not coding: a p50 of 1.3 days from first commit to merge, then 8.4 days merged and waiting. Releasing more often would cut lead time more than any coding change; the patch releases show it, with 1.59.0's regressions fixed in 45 hours by 1.59.1 against 30 and 39 days for 1.57.0 and 1.58.0, which waited for the next minor release
+  2. The change failure rate measures the failure window as much as the releases. Streamlit has no incident or hotfix label, so `type:regression` issues stand in, and users report regressions days after a release: 21% of releases fail with a 24-hour window, 50% with 72 hours, 79% with 7 days. Attribution by time also blames the latest release: 2 of the 7 counted regressions that name a version count against 1.59.2 but name 1.59.0. The band says "low", but quote the rate with its window
+- Decisions: a PR shipped in the first deploy whose compare range carries it, by merge commit or by a commit naming it, so cherry-picks ship with the patch release. The first deploy has no base, so what it shipped is unknown and says so
+  - Reverts are attributed by cause (the deploy that shipped the reverted PR), labels by time (the last successful deploy before the PR or issue was opened). A revert opened before its PR shipped isn't a production failure
+  - Recovery is the first fix for any of a deploy's signals: the deploy that ships the revert, hotfix, or an incident's linked PR; the issue closing only when there's no linked PR to wait for. A fix that ships in a deploy that fails too ends the first failure; the second is its own. Chaining them made streamlit's recoveries span unrelated regressions across three releases (70 days for 1.57.0), and the signals can't tell whether a later failure is the same one
+  - Deployment frequency counts successful deploys only; change failure rate's denominator is every deploy, failed ones included
+  - Lead time's split is reported as p50s plus a waiting share (sum of waiting over sum of lead time), because the p50s of the parts don't add up to the p50 of the whole
+  - Bands have no built-in default: they come from a report, so they sit in `flowlens.yaml` beside their source, and without them `flowlens dora` prints none. The latest DORA report (2025) dropped the four levels for seven archetypes, so the most recent levels are 2024's, and 2023's where 2024's overlap (medium's 10% failure rate below high's 20%; high and medium both under a day to recover). Values checked against Octopus Deploy's cluster tables; the report PDFs weren't read
+  - Recorded test fixtures are trimmed to commit subject lines: streamlit's commit messages carry AI co-author trailers, which don't belong in this repo. The two Day 2 workflow-run fixtures were trimmed the same way (4 messages)
+- Known gaps: deployment rework rate, DORA's fifth metric since 2024, isn't computed (patch releases would be a natural signal)
+  - Releases stand in for production deploys; for a library like streamlit that means "available on PyPI", not "running in production"
+  - Labels drive the failure rate: no labels means 0%, liberal labeling means more. Incident issues are attributed by time, not by the version they name
+  - Revert detection needs the reverted PR in the title or the squash commit; 3 of streamlit's 8 revert PRs name nothing FlowLens can match. PR bodies ("Reverts owner/repo#123") aren't ingested
+  - Recovery ends when the fix ships, not when users are restored, which no repository records
+  - Compares are fetched for the configured source only; switching `deployment_source` needs an `ingest`
+- Manual steps for Arnab: none
+- Next: Day 6, the Streamlit dashboard, the HTML report, GitHub Pages, and CI
