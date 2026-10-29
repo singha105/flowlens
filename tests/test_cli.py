@@ -195,7 +195,7 @@ def test_version():
     result = runner.invoke(cli.app, ["--version"])
 
     assert result.exit_code == 0
-    assert result.output.strip() == "flowlens 0.1.0"
+    assert result.output.strip() == "flowlens 1.0.0"
 
 
 def test_quality_prints_the_report(tmp_path, monkeypatch: pytest.MonkeyPatch):

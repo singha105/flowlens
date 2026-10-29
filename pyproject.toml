@@ -1,6 +1,6 @@
 [project]
 name = "flowlens"
-version = "0.1.0"
+version = "1.0.0"
 description = "Agile flow metrics, Monte Carlo delivery forecasts, and DORA metrics from a GitHub repo's history."
 readme = "README.md"
 license = "MIT"
