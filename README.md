@@ -1,53 +1,98 @@
 # FlowLens
 
-FlowLens turns a GitHub repository's history into the numbers delivery conversations actually need: cycle time, throughput, and aging work in progress; Monte Carlo forecasts that answer "when will these 30 items be done?" with a date range and a confidence level; and DORA metrics built from real merges, releases, and deployments. It runs locally on your own `gh` credentials, stores everything in a DuckDB file, writes every metric definition down, and costs nothing to run.
+[![CI](https://github.com/singha105/flowlens/actions/workflows/ci.yml/badge.svg)](https://github.com/singha105/flowlens/actions/workflows/ci.yml)
+[![Weekly report](https://github.com/singha105/flowlens/actions/workflows/weekly-report.yml/badge.svg)](https://github.com/singha105/flowlens/actions/workflows/weekly-report.yml)
 
-**Live report:** [singha105.github.io/flowlens](https://singha105.github.io/flowlens/), rebuilt every Monday from [streamlit/streamlit](https://github.com/streamlit/streamlit) by a GitHub Actions workflow.
+FlowLens turns a GitHub repository's history into delivery numbers you can check: cycle time, throughput, Monte Carlo dates with a backtested confidence, and DORA metrics. It runs locally for free, and every number traces back to the issues and PRs behind it.
 
-![The FlowLens dashboard's Flow tab on streamlit/streamlit: the three-line summary, PR cycle time, throughput and WIP tiles, and the cycle-time scatterplot with p50, p85 and p95 lines](docs/img/dashboard-flow.png)
+**[Live report](https://singha105.github.io/flowlens/)** (rebuilt every Monday from [streamlit/streamlit](https://github.com/streamlit/streamlit)) · [Dashboard screenshots](#the-dashboard) · [Findings memo](docs/INSIGHTS.md) · [Metric definitions](docs/METRICS.md)
 
-> Status: Day 6 of 7. Ingestion, the canonical work-item model, a data-quality report, flow metrics, backtested Monte Carlo forecasts, traceable DORA metrics, a Streamlit dashboard, and a weekly HTML report on GitHub Pages work. See [docs/PRD.md](docs/PRD.md) and [docs/PROGRESS.md](docs/PROGRESS.md).
+![The FlowLens dashboard on streamlit/streamlit: a three-line summary, cycle time, throughput and WIP tiles, and the cycle-time scatterplot with p50, p85 and p95 lines](docs/img/dashboard-flow.png)
+
+## The problem
+
+Every week a team gets asked "how are we doing?" and "when will it ship?". The answers usually come from story points converted to weeks in a spreadsheet, padded by instinct, or from a velocity chart nobody trusts. Neither says how confident it is, and neither is ever checked against what happened. The evidence to do better is already in the repository: every issue, PR, review, release and deployment has a timestamp.
+
+Even an honest statistical forecast needs checking. On the case-study repo, a forecast that promised 85% confidence held 71% of the time once tested against the repo's own past. A gut-feel date never gets that test.
+
+FlowLens is for two people ([PRD](docs/PRD.md)):
+
+- **An engineering manager** of a team of 4 to 10 working in GitHub. They want to see where work stalls and bring numbers to a retro, without a new vendor, an org-wide security review, or a leaderboard of individuals.
+- **A product manager** who gets asked for dates. They want a range with a stated confidence ("85% chance these 40 issues are done by Dec 7"), evidence of how far to trust it, and a link to share.
+
+FlowLens reports on the system of work, never on individual developers.
+
+## What it measures
+
+| Metric | The question it answers |
+|---|---|
+| Cycle time, p50/p85/p95 | Once someone starts, how long does it take? What's a fair delivery promise? |
+| Lead time | How long does a request wait from being opened to being delivered? |
+| Throughput | How many issues and PRs get delivered each week? |
+| WIP and aging WIP | What's in progress now, and what's older than it should be? |
+| Cumulative flow | Is work arriving faster than it gets finished? |
+| PR flow breakdown | Where does a PR's time go: coding, waiting for review, review, or waiting to merge? |
+| Monte Carlo "when" and "how many" | When will these N items be done, or how many by this date, at 50%, 85% and 95%? |
+| Forecast backtest | How often would those forecasts have held on this repo's own history? |
+| Deployment frequency | How often do changes reach users? |
+| Lead time for changes | How long from first commit to release, and how much of that is waiting? |
+| Change failure rate | What share of releases is followed by a regression, revert or hotfix? |
+| Failed deployment recovery time | How long until a failed release is fixed? |
+| Data quality | How much of this history can FlowLens actually measure? |
+
+Every definition, formula, GitHub signal and limitation is in [METRICS.md](docs/METRICS.md).
+
+## Key decisions and trade-offs
+
+- **Count items, don't estimate them.** Forecasts resample weekly delivered-item counts 10,000 times, and every forecast ships with a backtest that says how often it would have held. The trade-off: item size is ignored, and a trend isn't modelled. See [decision 0002](docs/decisions/0002-forecast-from-throughput.md).
+- **Percentiles, not averages.** Cycle times are heavily skewed. On streamlit the PR p50 is 1.1 days and the p95 is 38, so a mean describes no real PR.
+- **A configurable deploy source, and bands only from cited reports.** Most repos don't record production deploys, so DORA reads releases by default and says so. Performance bands live in `flowlens.yaml` beside the DORA report each comes from. See [decision 0003](docs/decisions/0003-dora-from-releases.md).
+- **Local-first and $0.** The user's own `gh` token is read at run time, each repo is one DuckDB file, and sharing is a static page published by GitHub Actions. There is no hosted service and no secrets. See [decision 0004](docs/decisions/0004-local-first-zero-cost.md).
+- **A busy demo repo with honest gaps.** streamlit/streamlit was chosen over cli/cli and pydantic/pydantic for volume and a clear release signal, despite its bots and sparse labels. See [decision 0001](docs/decisions/0001-demo-repo.md).
+- **Distrust the data until it's checked.** GitHub's GraphQL API silently drops issue timeline events on pages of 50. FlowLens reads 25 to a page, and spot checks of 20 issues and 20 PRs against fresh fetches matched exactly ([Day 2 log](docs/PROGRESS.md)).
+
+## Results on streamlit/streamlit
+
+The window is 26 weeks, Apr 27 to Oct 25, 2026: 884 merged PRs from people (bots excluded), 370 issues delivered, and 14 releases. It is read from two years of history, 9,667 work items. The full memo to the maintainers, with charts, recommendations and limits, is [docs/INSIGHTS.md](docs/INSIGHTS.md).
+
+1. **Release cadence, not coding, sets lead time.** Waiting merged for a release is 60% of lead time for changes: the coding p50 is 1.3 days and the waiting p50 is 8.4. When releases went from monthly to fortnightly in July, the PR lead-time p50 fell from 22.2 days to 9.3.
+2. **The first-review wait is the PR bottleneck, and human review is fading.** Waiting for a first human review takes a median of 28 hours, 89% of the summed PR stage medians. The share of merged PRs with a human review fell from 100% in July to 27% in October. Reviewed PRs have a cycle time p85 of 12.3 days, against 1.9 for the rest.
+3. **Forecasts are overconfident here: quote the 95%.** The backtest re-made the default forecast (12 weeks of history, 4 weeks ahead) at each of 52 past weeks:
+
+| Unit | 85% forecast held | 95% forecast held | 85% with 26 weeks of history |
+|---|---:|---:|---:|
+| Issues | 71% | 85% | 79% |
+| PRs | 79% | 92% | 83% |
+
+Throughput rose over the year, and resampling the past doesn't see a trend. The report's summary therefore tells readers which forecast to quote.
+
+Against the [PRD's](docs/PRD.md#success-criteria-for-v1) success criteria:
+
+| Criterion | Measured |
+|---|---|
+| First ingest of ~5,000 items in under 10 minutes | 5,716 items in 7.3 minutes (streamlit, one year) |
+| Re-run under 1 minute, under 20% of the GraphQL budget | 8 to 16 seconds; the first ingest used 318 of 5,000 points (6%) |
+| A 20-item spot check matches GitHub | 20 issues and 20 PRs matched fresh fetches exactly |
+| 85% forecast holds in 75–95% of backtest windows | **Missed for issues:** 71% (PRs 79%). The 95% holds 85%, and the summary says to quote it |
+| Dashboard handles 10,000 items in under 3 seconds | Computes all four tabs over 9,667 work items in 1.4 seconds (server side); 0.2 seconds on rerun |
+| CI publishes the report to GitHub Pages | Every Monday, plus on demand |
+| `git clone` to a report in under 15 minutes | 20 seconds for pallets/markupsafe, clone included |
 
 ## Quickstart
 
-Requires [uv](https://docs.astral.sh/uv/) and the [GitHub CLI](https://cli.github.com/) logged in with `gh auth login`.
+You need [uv](https://docs.astral.sh/uv/) and the [GitHub CLI](https://cli.github.com/), logged in with `gh auth login`.
 
 ```bash
 git clone https://github.com/singha105/flowlens && cd flowlens
 uv run flowlens ingest --repo pallets/markupsafe --since 2025-10-01
-uv run flowlens quality --repo pallets/markupsafe
-uv run flowlens flow --repo pallets/markupsafe --weeks 26
-uv run flowlens forecast --repo pallets/markupsafe --type pr --items 10
-uv run flowlens backtest --repo pallets/markupsafe --type pr
-uv run flowlens dora --repo pallets/markupsafe --weeks 26
-uv run flowlens report --repo pallets/markupsafe
 uv run streamlit run app/dashboard.py
 ```
 
-`ingest` writes `data/pallets__markupsafe.duckdb`: issues with their timelines, PRs with their reviews, releases, GitHub Deployments, and the runs of any Actions workflow you name with `--workflow`. Run it again and only what changed since the last run is fetched; `--full` refetches everything from `--since`. It then rebuilds the model: one `work_items` row per issue or PR with when it started and finished, a `work_item_events` history, a `deploys` stream, and which deploy shipped each merged PR (from the compare API, between each deploy and the one before it).
+`uv run flowlens report --repo pallets/markupsafe` writes the shareable page to `site/index.html`. Each metric also has its own command (`quality`, `flow`, `forecast`, `backtest`, `dora`). [docs/USAGE.md](docs/USAGE.md) covers every command, the settings in `flowlens.yaml`, the GitHub Actions workflows, and hosting the dashboard on Streamlit Community Cloud.
 
-`quality` reports how much of that history FlowLens can actually measure: how many items have a start signal, how many closed without a reason or without ever starting, how many merged PRs had a human review, and which deployment signals exist. Low coverage is a finding in its own right, so the report spells it out.
+## The dashboard
 
-`flow` computes the flow metrics over the last `--weeks` whole ISO weeks: lead and cycle time percentiles (p50, p85, p95) per type and label group, weekly throughput, daily WIP, aging WIP, cumulative flow, and where merged PRs spend their time. It prints a summary and writes every series to `data/out/flow_<owner>__<name>.json`. Each metric's definition, formula, GitHub signals, and limitations are in [docs/METRICS.md](docs/METRICS.md).
-
-`forecast` resamples recent weekly throughput 10,000 times to answer "when will these 40 items be done?" (`--items 40`) or "how many will be done by 31 December?" (`--by 2026-12-31`), with 50/85/95% answers and what a 20% throughput drop would do to them. `backtest` checks how well that forecast would have worked: from each of the last 52 weeks, it forecasts 4 and 8 weeks ahead using only the weeks before, then compares the forecast with what was delivered. The method, its assumptions, and when it breaks are in [docs/METRICS.md](docs/METRICS.md#forecasting).
-
-`dora` computes deployment frequency, lead time for changes (split into coding and waiting to deploy), change failure rate, and failed deployment recovery time, each with an elite/high/medium/low band from `flowlens.yaml`. Failures come from merged reverts, hotfix and incident labels, and failed deployment statuses. Every number is traceable: `data/out/dora_<owner>__<name>.json` lists each deploy with the PRs it shipped and the signals against it, and `data/out/dora_failures_<owner>__<name>.csv` lists each failure and why it counted. Definitions, sources for the bands, and limitations are in [docs/METRICS.md](docs/METRICS.md#dora).
-
-The token is read from `gh auth token` each time FlowLens runs and is never written to disk.
-
-## Dashboard and report
-
-`uv run streamlit run app/dashboard.py` opens the dashboard on every repo in `data/`. Pick a repo and a date range (rounded out to whole weeks) and it redraws four tabs, each chart with a one-line caption on how to read it and its data a click away:
-
-- **Flow**: cycle-time scatterplot with p50/p85/p95 lines, weekly throughput, cumulative flow, and aging WIP against the cycle-time percentiles.
-- **Forecast**: "when will N items be done?" and "how many by this date?", with the distribution of 10,000 simulated futures and the 50/85/95% answers, and the backtest's calibration chart.
-- **DORA**: the four keys with their bands, 26-week trends, and the failed deployments with the signal behind each.
-- **PR flow**: where merged PRs spend their time, month by month, with the bottleneck highlighted.
-
-The dashboard only reads: it shows each database as the last `flowlens` command left it. With no data at all it downloads the published streamlit snapshot from the live site.
-
-`uv run flowlens report --repo owner/name` writes the same charts as one page, `site/index.html` (about 5 MB, plotly included, so it opens offline and on a phone), next to `site/data/` with the JSON and CSV it was built from. It opens with three bullets generated from the numbers; the rules behind their wording are in [docs/METRICS.md](docs/METRICS.md#what-the-reports-add).
+Pick a repo and a date range, rounded out to whole weeks. Each chart has a one-line caption on how to read it and its data a click away.
 
 | Forecast | DORA |
 | --- | --- |
@@ -55,98 +100,65 @@ The dashboard only reads: it shows each database as the last `flowlens` command 
 | **PR flow** | **HTML report** |
 | ![PR flow tab: median hours per stage by month, waiting for first review highlighted](docs/img/dashboard-pr-flow.png) | ![The weekly HTML report: summary, tiles, and cycle-time chart](docs/img/report.png) |
 
-### Automation
+## How it works
 
-- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs ruff and the tests on every push and pull request.
-- [`.github/workflows/weekly-report.yml`](.github/workflows/weekly-report.yml) runs every Monday at 06:00 UTC and on demand: it ingests streamlit/streamlit with the workflow's built-in `GITHUB_TOKEN` (restoring last week's database from the Actions cache, so only changes are fetched), builds the report, and deploys it to GitHub Pages with the official Pages actions. It also publishes the database, which is what the hosted dashboard downloads.
-
-Both run on the free tier: no secrets to add, no paid services.
-
-### Hosting the dashboard on Streamlit Community Cloud
-
-The repo is ready for [Streamlit Community Cloud](https://share.streamlit.io) (free): [`app/requirements.txt`](app/requirements.txt) installs FlowLens from this repo plus Streamlit, [`.streamlit/config.toml`](.streamlit/config.toml) sets the theme, and no secrets are needed because the app downloads the public snapshot.
-
-1. Sign in at [share.streamlit.io](https://share.streamlit.io) with GitHub and allow access to the repository.
-2. **Create app** → **Deploy a public app from GitHub**: repository `singha105/flowlens`, branch `main`, main file path `app/dashboard.py`.
-3. Under **Advanced settings**, choose Python 3.12 (or newer). Leave secrets empty.
-4. Pick a subdomain (for example `flowlens`) and **Deploy**. The first start downloads the snapshot (about 50 MB) from the live site; the dashboard then shows the data of the last Monday's run. Reboot the app from its menu to pick up a newer week.
-
-## Configuration
-
-`flowlens.yaml` in the working directory says how to read a repository; every key is optional and the shipped file lists the defaults:
-
-- `started_signal`: what counts as work starting on an issue. Default: the earliest of first assignment, the first linked PR being opened, or an `in progress` label.
-- `labels`: which labels mark a bug, an incident, or a hotfix.
-- `deployment_source`: `releases`, `deployments` (to `deployment_environments`), or `workflow:<name>`.
-- `exclude`: items kept but left out of metrics: closed as not planned or duplicate, duplicate/wontfix/invalid labels, and bot authors.
-- `dora`: how long after a deploy a failure signal still counts against it (`failure_window_hours`, default 72), and the performance bands with the report each comes from. FlowLens has no built-in bands; the shipped file has approximate ones from the 2024 and 2023 DORA reports.
-
-A `repos: owner/name:` section overrides any of these for one repository. Changing the file takes effect on the next run of any command, without refetching; only a new `deployment_source` needs an `ingest`, to fetch what its deploys shipped.
-
-## Layout
-
-```
-flowlens/
-├── flowlens.yaml           settings: start signals, labels, deploy source, exclusions
-├── docs/
-│   ├── PRD.md              product requirements
-│   ├── METRICS.md          metric definitions and their limitations
-│   ├── PROGRESS.md         daily build log
-│   ├── decisions/          decision records (0001: the demo repo)
-│   └── img/                README screenshots
-├── app/
-│   ├── dashboard.py        the Streamlit dashboard
-│   └── requirements.txt    dependencies for Streamlit Community Cloud
-├── .github/workflows/      CI, and the weekly report on GitHub Pages
-├── src/flowlens/
-│   ├── cli.py              `flowlens ingest`, `quality`, `flow`, `forecast`, `backtest`, `dora`, `report`
-│   ├── config.py           flowlens.yaml loading and validation
-│   ├── storage.py          DuckDB schema, upserts, migrations, ingest run log
-│   ├── quality.py          data-quality report
-│   ├── snapshot.py         one repo's model loaded once, every report for any date range
-│   ├── charts.py           the plotly charts, each with its caption and table
-│   ├── summary.py          the three-bullet summary and the stat tiles
-│   ├── html_report.py      `flowlens report`: the self-contained page and its data
-│   ├── ingest/
-│   │   ├── client.py       GitHub client: gh auth, retries, rate-limit pacing
-│   │   ├── github.py       issues, timelines, PRs, reviews (GraphQL)
-│   │   ├── delivery.py     releases, deployments (GraphQL), workflow runs, compares (REST)
-│   │   └── runner.py       incremental ingest with per-stream watermarks
-│   ├── model/
-│   │   ├── work_items.py   canonical work items and the start/finish rules
-│   │   ├── deploys.py      deploys from the configured source
-│   │   ├── changes.py      which deploy shipped each merged PR
-│   │   └── build.py        rebuilds the model tables from the source tables
-│   └── metrics/
-│       ├── flow.py         flow metrics as pure functions over DataFrames
-│       ├── report.py       the `flow` report: JSON and the printed summary
-│       ├── forecast.py     Monte Carlo "when" and "how many", and the backtest
-│       ├── forecast_report.py  the `forecast` and `backtest` reports
-│       ├── dora.py         the four DORA keys and their failure signals
-│       └── dora_report.py  the `dora` report: JSON, the failures CSV, and the summary
-├── scripts/
-│   ├── record_fixtures.py  re-record test fixtures from public repos
-│   ├── compare_repos.py    the demo-repo comparison in docs/decisions/0001
-│   └── screenshots.py      the README screenshots, through the installed Chrome
-└── tests/
-    ├── fixtures/           recorded API responses (markupsafe, streamlit, cli)
-    ├── fakes.py            offline fakes of the GraphQL and REST APIs
-    ├── synthetic.py        seeded synthetic histories with brute-force ground truth
-    └── test_*.py
+```mermaid
+flowchart LR
+  GH["GitHub GraphQL and REST<br/>issues, timelines, PRs, reviews,<br/>releases, deployments, runs, compares"] -->|"gh auth token, incremental"| ING[ingest]
+  ING --> SRC[("DuckDB<br/>source tables")]
+  CFG["flowlens.yaml<br/>start signals, labels,<br/>deploy source, bands"] --> MODEL
+  SRC --> MODEL["model<br/>work items, events,<br/>deploys, PR to deploy"]
+  MODEL --> MET["metrics<br/>flow, forecast, backtest, DORA"]
+  MET --> OUT["CLI reports<br/>JSON and CSV"]
+  MET --> VIEW["charts and summary"]
+  VIEW --> DASH[Streamlit dashboard]
+  VIEW --> HTML[HTML report]
+  HTML -->|"weekly Actions run"| PAGES[GitHub Pages]
+  PAGES -.->|"database snapshot"| DASH
 ```
 
-Tests never touch the network; `tests/conftest.py` blocks sockets to make sure of it.
+The source tables keep what GitHub returned. The model tables are rebuilt from them on every run, so changing a setting never needs a refetch. Metrics are pure functions over DataFrames, which is what makes them testable against synthetic ground truth.
 
-## Development
+**Tech stack:** Python 3.12 and uv, DuckDB, pandas and numpy, httpx (GitHub GraphQL and REST), Typer, PyYAML, Plotly, Streamlit, pytest and ruff, GitHub Actions and GitHub Pages.
 
-```bash
-uv run pytest
-uv run ruff check .
-uv run ruff format --check .
-```
+**Tests:** 417 offline tests, with sockets blocked so none can reach the network:
+- flow metrics checked exactly against brute-force loops over seeded synthetic teams, and statistically against known distributions and Little's law;
+- forecasts checked against exact and enumerated answers, a no-look-ahead property, and calibration on stationary data;
+- DORA checked on hand-built deploy histories with known answers;
+- ingest replayed against API responses recorded from markupsafe, streamlit and cli/cli;
+- the dashboard run end to end with Streamlit's AppTest.
 
-CI runs the same three on every push.
+CI runs ruff and the suite on every push and pull request.
+
+## Roadmap
+
+These are plans, not features.
+
+| Now | Next | Later |
+|---|---|---|
+| Deployment rework rate, DORA's fifth metric, from patch releases | Jira and Linear import (the model already separates source tables from work items) | A multi-repo portfolio view |
+| Revert detection from PR bodies ("Reverts owner/repo#123") | A weekly digest of the three summary bullets to Slack or email | GitLab as a source |
+| Review coverage split before and after a date in the PR flow view | A trend-aware forecast option, judged by the same backtest | Forecasts that account for item size |
+
+## Limitations
+
+- **GitHub records only part of the work.** There's no "in progress" state, so starts come from assignments, linked PRs and labels. On streamlit, issue cycle time covers 72% of the issues delivered in the 26-week window, and over two years 46% of finished issues show no start at all.
+- **Releases stand in for deploys.** For a library, a release means "on PyPI", not "running in production". The change failure rate depends on labels and on the failure window: 21%, 50% or 79% of streamlit's releases, at 24 hours, 72 hours or 7 days.
+- **Forecasts count items and assume the near future looks like the recent past.** The backtest measures how wrong that has been; it doesn't fix it.
+- **Durations are calendar days in UTC.** Bots are excluded by default.
+- **Items untouched since `--since` are missing.** Old idle work is invisible to WIP and aging.
+- **It's a single-user, local tool.** The hosted dashboard shows the last weekly snapshot until it's rebooted.
+
+## Project documents
+
+- [PRD](docs/PRD.md): problem, users, goals, success criteria.
+- [METRICS.md](docs/METRICS.md): every definition and limitation.
+- [USAGE.md](docs/USAGE.md): commands, settings, workflows.
+- [INSIGHTS.md](docs/INSIGHTS.md): the memo to streamlit's maintainers.
+- [decisions/](docs/decisions/): decision records.
+- [PROGRESS.md](docs/PROGRESS.md): the seven-day build log.
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute.
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).

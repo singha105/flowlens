@@ -1,6 +1,6 @@
 # FlowLens — Product Requirements
 
-Status: Draft v0.1 · Owner: Arnab Singh · Last updated: 2026-10-29
+Status: v1.0, shipped · Owner: Arnab Singh · Last updated: 2026-10-29 · How v1 measured up: [README](../README.md#results-on-streamlitstreamlit)
 
 ## Problem
 
@@ -54,8 +54,8 @@ Non-goals for v1:
 | Forecast backtest | How often a forecast made at a past date, at a given percentile, covered what actually happened. |
 | Deployment frequency | Successful production deploys per week, from the source named in `flowlens.yaml`: releases (default), GitHub Deployments to production environments, or a workflow's runs. |
 | Lead time for changes | Time from a PR's first commit to the deployment that shipped it. |
-| Change failure rate | Share of deployments followed within 7 days by a revert, a hotfix, or an incident-labelled issue. |
-| Failed deployment recovery time | Time from a failure signal to the next successful deployment or the incident closing. |
+| Change failure rate | Share of deployments followed within a set window (`dora.failure_window_hours`, 72 hours by default) by a revert of a PR they shipped, a hotfix or incident label, or a failed deployment status. |
+| Failed deployment recovery time | Time from a failed deployment to the deployment that ships its fix, or to the incident closing when no fix PR is linked. |
 
 Durations are reported as 50th/85th/95th percentiles rather than means, because cycle-time distributions are heavily skewed. [METRICS.md](METRICS.md) has the exact formulas, the GitHub signals behind each metric, and its limitations.
 
