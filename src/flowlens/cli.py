@@ -1,6 +1,7 @@
 """The ``flowlens`` command."""
 
 from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -10,6 +11,15 @@ from flowlens import __version__
 from flowlens.config import ConfigError, load_config
 from flowlens.ingest.client import GitHubError
 from flowlens.ingest.runner import IngestSummary, ingest_repo, parse_repo
+from flowlens.metrics.forecast import ForecastError
+from flowlens.metrics.forecast_report import (
+    Throughput,
+    backtest_report,
+    forecast_report,
+    format_backtest,
+    format_forecast,
+    load_throughput,
+)
 from flowlens.metrics.report import flow_report_for, format_flow, write_report
 from flowlens.model.build import ModelCounts, build_model
 from flowlens.quality import build_report, format_report
@@ -67,6 +77,22 @@ ConfigOption = Annotated[
     Path | None,
     typer.Option(help="Settings file. Defaults to ./flowlens.yaml when it exists."),
 ]
+
+
+class Unit(StrEnum):
+    issue = "issue"
+    pr = "pr"
+    total = "total"
+
+
+UnitOption = Annotated[
+    Unit,
+    typer.Option(
+        "--type", help="What to count. total counts an issue and the PR that closed it twice."
+    ),
+]
+TrialsOption = Annotated[int, typer.Option(min=100, help="Monte Carlo trials per forecast.")]
+SeedOption = Annotated[int, typer.Option(help="Random seed: the same seed gives the same result.")]
 
 
 @app.command()
@@ -145,6 +171,96 @@ def flow(
     out = write_report(report, data_dir / "out" / f"flow_{owner}__{name}.json")
     typer.echo(format_flow(report))
     typer.echo(f"\nWrote {out}")
+
+
+@app.command()
+def forecast(
+    repo: RepoOption,
+    items: Annotated[
+        int | None, typer.Option(min=0, help="When will this many more items be done?")
+    ] = None,
+    by: Annotated[
+        str | None, typer.Option(help="How many items will be done by this date (YYYY-MM-DD)?")
+    ] = None,
+    unit: UnitOption = Unit.issue,
+    history_weeks: Annotated[
+        int, typer.Option(min=1, help="How many recent complete weeks to resample.")
+    ] = 12,
+    start: Annotated[
+        str | None, typer.Option(help="Forecast from this date. Default: the next Monday.")
+    ] = None,
+    trials: TrialsOption = 10_000,
+    seed: SeedOption = 0,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
+) -> None:
+    """Monte Carlo forecast from weekly throughput: --items for "when", --by for "how many".
+
+    Writes the full distribution to <data-dir>/out/forecast_<owner>__<name>_<type>.json.
+    """
+    if (items is None) == (by is None):
+        typer.echo("error: give either --items (when?) or --by (how many?)", err=True)
+        raise typer.Exit(2)
+    by_at, start_at = parse_since(by), parse_since(start)
+    throughput = _throughput(repo, unit, data_dir, config)
+    try:
+        report = forecast_report(
+            throughput,
+            items=items,
+            by=by_at,
+            start=start_at,
+            history_weeks=history_weeks,
+            trials=trials,
+            seed=seed,
+        )
+    except ValueError as exc:  # ForecastError included
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+    out = write_report(report, _out_path(data_dir, "forecast", throughput))
+    typer.echo(format_forecast(report))
+    typer.echo(f"\nWrote {out}")
+
+
+@app.command()
+def backtest(
+    repo: RepoOption,
+    unit: UnitOption = Unit.issue,
+    origins: Annotated[
+        int, typer.Option(min=1, help="How many past weeks to forecast from, per horizon.")
+    ] = 52,
+    trials: TrialsOption = 10_000,
+    seed: SeedOption = 0,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
+) -> None:
+    """Score the forecast against history: from each past week, forecast 4 and 8 weeks ahead
+    with 6, 12, and 26 weeks of history, then compare with what was delivered.
+
+    Writes every forecast to <data-dir>/out/backtest_<owner>__<name>_<type>.json.
+    """
+    throughput = _throughput(repo, unit, data_dir, config)
+    try:
+        report = backtest_report(throughput, origins=origins, trials=trials, seed=seed)
+    except ForecastError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+    out = write_report(report, _out_path(data_dir, "backtest", throughput))
+    typer.echo(format_backtest(report))
+    typer.echo(f"\nWrote {out}")
+
+
+def _throughput(repo: str, unit: Unit, data_dir: Path, config: Path | None) -> Throughput:
+    settings = _load_config(config, repo)
+    owner, name = parse_repo(repo)
+    path = _existing_db(data_dir, owner, name)
+    with Store(path) as store:
+        build_model(store, settings, f"{owner}/{name}")
+        return load_throughput(store, f"{owner}/{name}", unit.value)
+
+
+def _out_path(data_dir: Path, kind: str, throughput: Throughput) -> Path:
+    owner, name = throughput.repo.split("/")
+    return data_dir / "out" / f"{kind}_{owner}__{name}_{throughput.unit}.json"
 
 
 def _existing_db(data_dir: Path, owner: str, name: str) -> Path:

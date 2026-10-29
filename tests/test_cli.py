@@ -239,3 +239,88 @@ def test_flow_needs_at_least_one_week(tmp_path):
     )
 
     assert result.exit_code == 2
+
+
+@pytest.fixture
+def streamlit_data(tmp_path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    data_dir = tmp_path / "data"
+    with Store(db_path_for(data_dir, "streamlit", "streamlit")) as store:
+        fill_with_streamlit(
+            store,
+            coverage_from=datetime(2025, 10, 29, tzinfo=UTC),
+            finished_at=datetime(2026, 10, 29, 5, tzinfo=UTC),
+        )
+    monkeypatch.chdir(Path(__file__).parent.parent)
+    return data_dir
+
+
+def test_forecast_when(streamlit_data):
+    result = runner.invoke(
+        cli.app,
+        ["forecast", "--repo", "streamlit/streamlit", "--items", "2",
+         "--data-dir", str(streamlit_data)],
+    )  # fmt: skip
+
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert lines[0] == "Forecast: 2 issues from 2026-11-02 (12 weeks of history, 10,000 trials)"
+    assert lines[1] == (
+        "  history: 2026-08-03 → 2026-10-25, 0.2 issues/week (min 0, max 1, 10 empty weeks)"
+    )
+    out = streamlit_data / "out" / "forecast_streamlit__streamlit_issue.json"
+    assert json.loads(out.read_text())["when"]["items"] == 2
+    assert lines[-1] == f"Wrote {out}"
+
+
+def test_forecast_how_many(streamlit_data):
+    result = runner.invoke(
+        cli.app,
+        ["forecast", "--repo", "streamlit/streamlit", "--by", "2026-12-31",
+         "--start", "2026-11-02", "--data-dir", str(streamlit_data)],
+    )  # fmt: skip
+
+    assert result.exit_code == 0, result.output
+    assert result.output.startswith(
+        "Forecast: issues done from 2026-11-02 through 2026-12-27 (8 whole weeks; "
+    )
+
+
+def test_forecast_needs_one_question(streamlit_data):
+    for extra in ([], ["--items", "3", "--by", "2026-12-31"]):
+        result = runner.invoke(
+            cli.app,
+            ["forecast", "--repo", "streamlit/streamlit", "--data-dir", str(streamlit_data),
+             *extra],
+        )  # fmt: skip
+        assert result.exit_code == 2
+        assert "give either --items" in result.output
+
+
+def test_forecast_without_throughput_explains_why(streamlit_data):
+    result = runner.invoke(
+        cli.app,
+        ["forecast", "--repo", "streamlit/streamlit", "--items", "5", "--type", "pr",
+         "--data-dir", str(streamlit_data)],
+    )  # fmt: skip
+
+    assert result.exit_code == 1
+    assert "nothing was delivered in the 12 weeks before 2026-11-02" in result.output
+
+
+def test_backtest_scores_what_history_allows(streamlit_data):
+    result = runner.invoke(
+        cli.app,
+        ["backtest", "--repo", "streamlit/streamlit", "--trials", "500",
+         "--data-dir", str(streamlit_data)],
+    )  # fmt: skip
+
+    assert result.exit_code == 0, result.output
+    assert result.output.startswith(
+        "Backtest · streamlit/streamlit · issues · 500 trials per forecast "
+        "(51 weeks of measured history from 2025-11-03)"
+    )
+    # 51 weeks leave room for 22 origins at 4 weeks out and 18 at 8 (26 weeks of history).
+    assert "4-week horizon: 22 weekly origins" in result.output
+    assert "8-week horizon: 18 weekly origins" in result.output
+    out = streamlit_data / "out" / "backtest_streamlit__streamlit_issue.json"
+    assert len(json.loads(out.read_text())["forecasts"]) == (22 + 18) * 3
