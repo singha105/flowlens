@@ -5,6 +5,9 @@
     python3 -m http.server 8710 --directory site
     uv run --with playwright python scripts/screenshots.py
 
+``scripts/screenshots.py insights`` takes only the report's charts that docs/INSIGHTS.md
+shows, one card each, and needs only the report server.
+
 Drives the installed Google Chrome (Playwright's ``channel="chrome"``), so there's no
 browser to download. The dashboard opens a tab from its URL (``?tab=DORA``).
 """
@@ -19,6 +22,13 @@ REPORT = "http://localhost:8710"
 OUT = Path(__file__).parent.parent / "docs" / "img"
 TABS = {"Flow": "flow", "Forecast": "forecast", "DORA": "dora", "PR flow": "pr-flow"}
 SIZE = {"width": 1440, "height": 1500}
+# Report chart → image for docs/INSIGHTS.md. At 900px the report lays charts one per row.
+INSIGHT_CHARTS = {
+    "dora-lead_time": "insight-lead-time",
+    "dora-recovery": "insight-recovery",
+    "pr-flow-pr_flow": "insight-pr-flow",
+    "forecast-calibration": "insight-calibration",
+}
 
 
 def settle(page: Page, plots: int) -> None:
@@ -58,5 +68,25 @@ def main(dashboard: str = DASHBOARD, report: str = REPORT) -> None:
         browser.close()
 
 
+def insights(report: str = REPORT) -> None:
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(channel="chrome")
+        page = browser.new_page(
+            viewport={"width": 900, "height": 1200}, device_scale_factor=2, color_scheme="light"
+        )
+        page.goto(report)
+        settle(page, len(INSIGHT_CHARTS))
+        for plot, name in INSIGHT_CHARTS.items():
+            card = page.locator(f".card:has(#plot-{plot})")
+            card.scroll_into_view_if_needed()
+            page.wait_for_timeout(300)
+            card.screenshot(path=OUT / f"{name}.png")
+            print(f"Wrote {OUT / f'{name}.png'}")
+        browser.close()
+
+
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    if sys.argv[1:2] == ["insights"]:
+        insights(*sys.argv[2:])
+    else:
+        main(*sys.argv[1:])
