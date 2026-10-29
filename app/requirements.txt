@@ -1,0 +1,4 @@
+# Streamlit Community Cloud installs the dashboard from this file (it looks next to the
+# entrypoint before the repo root). FlowLens comes from this repo, with its dependencies.
+flowlens @ git+https://github.com/singha105/flowlens@main
+streamlit>=1.66.1
