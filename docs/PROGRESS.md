@@ -225,3 +225,27 @@
   - The report shows one repo and one 26-week window; the dashboard covers any repo in `data/` and any range
 - Manual steps for Arnab: optional, deploy the dashboard on Streamlit Community Cloud (steps in the README, about 5 minutes, free)
 - Next: Day 7
+
+## Day 7 — 2026-10-29
+- Done: FlowLens 1.0.0, written up as a case study
+  - Fresh numbers: incremental ingest of streamlit/streamlit (8 API calls, 10 s, data as of 2026-10-29 22:41 UTC), then `quality`, `flow`, `forecast`, `backtest`, `dora`, and `report`. Every number in the README, the memo, and the resume notes comes from this run or from an earlier day's log, cited
+  - [INSIGHTS.md](INSIGHTS.md): a memo to streamlit's maintainers with three findings, each with its number, a chart, a recommendation, and the expected effect, plus the limits of the analysis. The charts are cards from the report, taken by `scripts/screenshots.py insights`
+  - README rewritten as a case study: pitch and live links, the problem and who it's for, a metric → question table, key decisions, results on streamlit with a scorecard against the PRD's success criteria, a three-command quickstart, a Mermaid architecture diagram, the stack, tests and CI badges, a Now/Next/Later roadmap, and limitations. The full command reference moved to [USAGE.md](USAGE.md)
+  - Decision records 0002 (forecast from counts, backtest every forecast), 0003 (DORA from a configurable source, cited bands only), and 0004 (local-first, $0), each written from the day it was decided
+  - Repo polish: CONTRIBUTING.md, bug report and feature request forms, and the description, homepage (the live report), and topics agile, kanban, dora-metrics, monte-carlo, product-management, github-analytics. History checked before tagging: 36 commits, all by Arnab Singh, no attribution trailers, no token-shaped strings, and no `.env` or `.duckdb` file ever committed
+  - Fixed: a fresh clone ran ingest and report on pallets/markupsafe in 20 seconds, and its summary exposed four thin-data mistakes, now covered by rules and tests: "1 minutes"; 85% forecasts "held 100%" when 0.6 issues were delivered per four weeks (no calibration verdict below 10 items per horizon); "getting rare" for reviews a repo never had (and no stage verdict without any human review); and an "elite" failure-rate band from a single release (no band below 3 deploys)
+  - [RESUME.md](RESUME.md): three bullet options by role, a two-sentence pitch, and the source of every number
+  - Version 1.0.0, tagged and released on GitHub with notes written for users
+  - 417 offline tests (410 on Day 6), ruff clean, CI green
+- Observations (the memo has the detail):
+  1. Release cadence sets lead time. Waiting for a release is 60% of lead time for changes. PRs shipped in the three monthly releases (Apr to early Jul) had a lead-time p50 of 22.2 days; PRs in the 11 releases since, a median of 11.8 days apart, had 9.3. Replaying the same merges with a release every Monday gives a p50 of 6.1 days
+  2. The first-review wait is 89% of the summed PR stage medians (28 hours), and 53% of reviewed PRs wait over a day. Human review fell from 100% of merged PRs in July to 27% in October; reviewed PRs have a cycle time p85 of 12.3 days, unreviewed 1.9. Capping the first-review wait at 24 hours would bring the reviewed p85 to 4.2 days
+  3. Selectbox is the regression hot spot: 5 of the 15 regression reports that counted against a release name `st.selectbox`
+- Decisions: what-ifs are labelled as replays of the repo's own merges under another policy, never as predictions, and the memo says what they leave out (the cost of releasing and reviewing, behaviour changes)
+  - The roadmap is labelled as plans, and the README says FlowLens has no users to cite
+  - The PRD now matches what shipped: change failure rate uses the configured window (72 hours by default, not the draft's 7 days), and recovery runs from the failed deploy to the deploy that ships its fix
+  - The PRD scorecard reports the miss: the 85% forecast held 71% for issues, below the 75–95% target, with the 95% as the workaround
+- Known gaps: the screenshots are light mode only, and the hosted dashboard isn't deployed
+  - Everything listed under Limitations in the README and the memo: GitHub's partial record of work, releases standing in for deploys, label- and window-dependent failure rates, small release samples, no trend term in forecasts
+- Manual steps for Arnab: pin the repo on the GitHub profile; optionally deploy the dashboard on Streamlit Community Cloud (steps in USAGE.md) and add its link to the README
+- Next: the roadmap in the README
