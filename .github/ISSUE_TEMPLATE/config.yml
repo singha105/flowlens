@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Metric definitions
+    url: https://github.com/singha105/flowlens/blob/main/docs/METRICS.md
+    about: How every number is defined, and its known limitations.
