@@ -69,6 +69,9 @@ DAY_TICKS = {
 FLOOR_DAYS = 1 / 96  # 15 minutes: durations below sit on the floor of a log axis
 TRAILING_WEEKS = 8
 MIN_TRAILING_DEPLOYS = 3  # fewer deploys than this make the trailing rate noise
+# Below this many items delivered per backtest horizon, most forecasts are "at least 0" or 1
+# and hold almost by default, so calibration isn't judged.
+MIN_BACKTEST_ITEMS = 10
 
 
 @dataclass(frozen=True)
@@ -420,10 +423,17 @@ def calibration_chart(report: dict[str, Any], horizon: int, history_weeks: int =
     )
     if len(chosen):
         held85, held95 = float(chosen["held_85"].iloc[0]), float(chosen["held_95"].iloc[0])
+        delivered = float(chosen["mean_actual"].iloc[0])
         caption += (
-            f" With {history_weeks} weeks of history the 85% forecast held {held85:.0%} of the "
-            f"time{_calibration_advice(held85, held95)}."
+            f" With {history_weeks} weeks of history the 85% forecast held {held85:.0%} of the time"
         )
+        if delivered < MIN_BACKTEST_ITEMS:
+            caption += (
+                f", but only {delivered:.1f} {NOUNS[report['unit']][1]} were delivered per "
+                f"{horizon} weeks on average: too few to judge the forecasts."
+            )
+        else:
+            caption += f"{_calibration_advice(held85, held95)}."
     table = scores.drop(columns=["first_origin", "last_origin"]).round(3)
     return Chart("calibration", title, caption, fig, table)
 
@@ -757,7 +767,8 @@ def hours_text(hours: float | None) -> str:
     if hours is None or (isinstance(hours, float) and math.isnan(hours)):
         return "-"
     if hours < 1:
-        return f"{hours * 60:.0f} minutes"
+        minutes = round(hours * 60)
+        return {0: "under a minute", 1: "1 minute"}.get(minutes, f"{minutes} minutes")
     if hours < 48:
         return f"{hours:.0f} hours" if hours >= 1.5 else "1 hour"
     return days_text(hours / 24)

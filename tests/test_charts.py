@@ -157,6 +157,18 @@ def test_calibration_highlights_the_history_in_use_and_says_what_to_quote(held85
     assert f"held {held85:.0%} of the time, {advice}." in chart.caption
 
 
+def test_calibration_is_not_judged_on_a_trickle_of_deliveries():
+    report = backtest({12: (1.0, 1.0, 1.0)})
+    report["scores"][0]["mean_actual"] = 0.6
+
+    chart = charts.calibration_chart(report, horizon=4, history_weeks=12)
+
+    assert chart.caption.endswith(
+        "the 85% forecast held 100% of the time, but only 0.6 issues were delivered per 4 "
+        "weeks on average: too few to judge the forecasts."
+    )
+
+
 # --- DORA -------------------------------------------------------------------------------
 
 
@@ -268,7 +280,15 @@ def test_every_color_the_figures_use_has_a_dark_mode_step():
 
 @pytest.mark.parametrize(
     ("hours", "text"),
-    [(0.25, "15 minutes"), (1, "1 hour"), (20, "20 hours"), (60, "2.5 days"), (2400, "100 days")],
+    [
+        (0.004, "under a minute"),
+        (0.014, "1 minute"),
+        (0.25, "15 minutes"),
+        (1, "1 hour"),
+        (20, "20 hours"),
+        (60, "2.5 days"),
+        (2400, "100 days"),
+    ],
 )
 def test_durations_read_in_the_unit_people_use(hours, text):
     assert hours_text(hours) == text

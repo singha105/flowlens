@@ -58,14 +58,16 @@ def dora(
     }  # fmt: skip
 
 
-def backtest(held85: float, held95: float = 0.85) -> dict:
+def backtest(held85: float, held95: float = 0.85, delivered: float = 52.5) -> dict:
     return {
         "unit": "issue",
         "scores": [
-            {"horizon_weeks": 8, "history_weeks": 12, "held_85": 0.1, "held_95": 0.1},
-            {"horizon_weeks": 4, "history_weeks": 12, "held_85": held85, "held_95": held95},
+            {"horizon_weeks": 8, "history_weeks": 12, "held_85": 0.1, "held_95": 0.1,
+             "mean_actual": 103.8},
+            {"horizon_weeks": 4, "history_weeks": 12, "held_85": held85, "held_95": held95,
+             "mean_actual": delivered},
         ],
-    }
+    }  # fmt: skip
 
 
 def test_the_demo_repo_summary_reads_like_the_brief():
@@ -107,6 +109,15 @@ def test_without_a_backtest_the_summary_says_so():
     )
 
 
+def test_a_trickle_of_deliveries_is_too_little_to_judge_forecasts():
+    (delivery, *_) = executive_summary(flow(), dora(), backtest(1.0, 1.0, delivered=0.6))
+
+    assert delivery.lead == "Delivery"
+    assert delivery.text.endswith(
+        "; too few issues are delivered (0.6 per 4 weeks) to judge forecasts."
+    )
+
+
 def test_issues_stand_in_when_no_prs_were_delivered():
     (delivery, *_) = executive_summary(flow(prs=0), dora(), backtest(0.84))
 
@@ -128,6 +139,29 @@ def test_the_bottleneck_lead_names_the_kind_of_stage(stage, lead):
     assert "Human reviews" not in bottleneck.text  # 90% reviewed is not worth a sentence
 
 
+def test_reviews_are_rare_unless_an_earlier_month_had_them():
+    report = flow()
+    for month in report["pr_flow"]["monthly"]:
+        month["reviewed_share"] = 0.3
+
+    (_, bottleneck, _) = executive_summary(report, dora(), None)
+
+    assert bottleneck.text.endswith("Human reviews are rare: 30% of October's merged PRs had one.")
+
+
+def test_without_human_reviews_there_is_no_review_wait_to_measure():
+    report = flow(bottleneck="coding", reviewed=0.0)
+    for stage in ("waiting_for_review", "in_review", "waiting_to_merge"):
+        report["pr_flow"]["stages"][stage] = {"count": 0, "median_hours": None}
+
+    (_, bottleneck, _) = executive_summary(report, dora(), None)
+
+    assert str(bottleneck) == (
+        "PR flow: none of the 884 merged PRs had a human review, so there's no review wait to "
+        "measure."
+    )
+
+
 def test_dora_says_and_or_but_by_how_much_lead_time_is_waiting():
     *_, mostly_coding = executive_summary(flow(), dora(waiting=0.3, freq_band=None), None)
     *_, no_deploys = executive_summary(flow(), dora(deploys=0), None)
@@ -137,6 +171,15 @@ def test_dora_says_and_or_but_by_how_much_lead_time_is_waiting():
         "50% of deploys failed within 72 hours (low band)."
     )
     assert no_deploys.text == "no deploys from releases in the window."
+
+
+def test_one_or_two_deploys_are_too_few_to_rate():
+    *_, one_deploy = executive_summary(flow(), dora(deploys=1, rate=0.0, cfr_band="elite"), None)
+
+    assert one_deploy.text.endswith(
+        "; 0 of 1 deploys failed within 72 hours, too few deploys to rate."
+    )
+    assert "elite" not in one_deploy.text
 
 
 def test_dora_tiles_carry_their_band():

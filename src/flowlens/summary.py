@@ -9,7 +9,14 @@ from typing import Any
 
 import pandas as pd
 
-from flowlens.charts import NOUNS, date_text, days_text, hours_text
+from flowlens.charts import (
+    MIN_BACKTEST_ITEMS,
+    MIN_TRAILING_DEPLOYS,
+    NOUNS,
+    date_text,
+    days_text,
+    hours_text,
+)
 from flowlens.metrics.report import STAGE_NAMES
 
 # An 85% forecast that held within this much of 85% is "close to its promise".
@@ -73,6 +80,12 @@ def _delivery(
         return Bullet("Delivery", f"{promise}; there's too little history to backtest forecasts.")
     unit = NOUNS[backtest["unit"]][0]
     held85, held95 = score["held_85"], score["held_95"]
+    if score["mean_actual"] < MIN_BACKTEST_ITEMS:
+        return Bullet(
+            "Delivery",
+            f"{promise}; too few {NOUNS[backtest['unit']][1]} are delivered "
+            f"({score['mean_actual']:.1f} per {horizon} weeks) to judge forecasts.",
+        )
     if held85 < 0.85 - CALIBRATION_TOLERANCE:
         return Bullet(
             f"{plural[:1].upper() + plural[1:]} are predictable, forecasts optimistic",
@@ -92,6 +105,12 @@ def _bottleneck(flow: dict[str, Any]) -> Bullet:
     stage = pr_flow["bottleneck"]
     if stage is None:
         return Bullet("PR flow", "no PR stage stands out; too few PRs had every timestamp.")
+    if pr_flow["merged"] and not pr_flow["stages"]["waiting_for_review"]["count"]:
+        return Bullet(
+            "PR flow",
+            f"none of the {pr_flow['merged']:,} merged PRs had a human review, so there's no "
+            "review wait to measure.",
+        )
     hours = pr_flow["stages"][stage]["median_hours"]
     text = (
         f"{STAGE_NAMES[stage]} takes a median of {hours_text(hours)}, "
@@ -100,8 +119,14 @@ def _bottleneck(flow: dict[str, Any]) -> Bullet:
     monthly = pr_flow["monthly"]
     if monthly and (monthly[-1]["reviewed_share"] or 0) < FEW_REVIEWS:
         month = pd.Timestamp(monthly[-1]["month"] + "-01")
+        # "Getting rare" only when an earlier month had them; otherwise they always were.
+        trend = (
+            "getting rare"
+            if any((m["reviewed_share"] or 0) >= FEW_REVIEWS for m in monthly[:-1])
+            else "rare"
+        )
         text += (
-            f" Human reviews are getting rare: {monthly[-1]['reviewed_share']:.0%} of "
+            f" Human reviews are {trend}: {monthly[-1]['reviewed_share']:.0%} of "
             f"{month:%B}'s merged PRs had one."
         )
     return Bullet(BOTTLENECK_LEADS[stage], text)
@@ -118,11 +143,15 @@ def _dora(dora: dict[str, Any]) -> Bullet:
     if share is not None:
         joiner = "but" if share >= 0.5 else "and"
         text += f", {joiner} {share:.0%} of lead time is waiting for a release"
-    failure_band = f" ({cfr['band']} band)" if cfr["band"] else ""
-    text += (
-        f"; {cfr['rate']:.0%} of deploys failed within "
-        f"{cfr['failure_window_hours']:.0f} hours{failure_band}."
-    )
+    window = f"{cfr['failure_window_hours']:.0f} hours"
+    if cfr["deploys"] < MIN_TRAILING_DEPLOYS:
+        text += (
+            f"; {cfr['failed']} of {cfr['deploys']} deploys failed within {window}, too few "
+            "deploys to rate."
+        )
+    else:
+        failure_band = f" ({cfr['band']} band)" if cfr["band"] else ""
+        text += f"; {cfr['rate']:.0%} of deploys failed within {window}{failure_band}."
     return Bullet("DORA", text)
 
 
