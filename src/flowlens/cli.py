@@ -10,6 +10,7 @@ from flowlens import __version__
 from flowlens.config import ConfigError, load_config
 from flowlens.ingest.client import GitHubError
 from flowlens.ingest.runner import IngestSummary, ingest_repo, parse_repo
+from flowlens.metrics.report import flow_report_for, format_flow, write_report
 from flowlens.model.build import ModelCounts, build_model
 from flowlens.quality import build_report, format_report
 from flowlens.storage import Store, db_path_for
@@ -115,16 +116,46 @@ def quality(
     """Report how much of the ingested history FlowLens can measure."""
     settings = _load_config(config, repo)
     owner, name = parse_repo(repo)
-    path = db_path_for(data_dir, owner, name)
-    if not path.exists():
-        typer.echo(
-            f"error: no data for {repo} in {data_dir}. Run `flowlens ingest` first.", err=True
-        )
-        raise typer.Exit(1)
+    path = _existing_db(data_dir, owner, name)
     with Store(path) as store:
         build_model(store, settings, f"{owner}/{name}")
         report = build_report(store, settings, f"{owner}/{name}")
     typer.echo(format_report(report))
+
+
+@app.command()
+def flow(
+    repo: RepoOption,
+    weeks: Annotated[
+        int, typer.Option(min=1, help="Whole ISO weeks to measure, ending last Monday (UTC).")
+    ] = 26,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
+) -> None:
+    """Cycle and lead time, throughput, WIP, aging, cumulative flow, and PR flow.
+
+    Prints a summary and writes every series to <data-dir>/out/flow_<owner>__<name>.json.
+    """
+    settings = _load_config(config, repo)
+    owner, name = parse_repo(repo)
+    path = _existing_db(data_dir, owner, name)
+    with Store(path) as store:
+        build_model(store, settings, f"{owner}/{name}")
+        report = flow_report_for(store, f"{owner}/{name}", weeks=weeks)
+    out = write_report(report, data_dir / "out" / f"flow_{owner}__{name}.json")
+    typer.echo(format_flow(report))
+    typer.echo(f"\nWrote {out}")
+
+
+def _existing_db(data_dir: Path, owner: str, name: str) -> Path:
+    path = db_path_for(data_dir, owner, name)
+    if not path.exists():
+        typer.echo(
+            f"error: no data for {owner}/{name} in {data_dir}. Run `flowlens ingest` first.",
+            err=True,
+        )
+        raise typer.Exit(1)
+    return path
 
 
 def _load_config(path: Path | None, repo: str):

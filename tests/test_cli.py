@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -196,3 +197,45 @@ def test_quality_without_data_says_to_ingest_first(tmp_path):
 
     assert result.exit_code == 1
     assert "Run `flowlens ingest` first" in result.output
+
+
+def test_flow_prints_the_summary_and_writes_json(tmp_path, monkeypatch: pytest.MonkeyPatch):
+    data_dir = tmp_path / "data"
+    with Store(db_path_for(data_dir, "streamlit", "streamlit")) as store:
+        fill_with_streamlit(
+            store,
+            coverage_from=datetime(2025, 10, 29, tzinfo=UTC),
+            finished_at=datetime(2026, 10, 29, 5, tzinfo=UTC),
+        )
+    monkeypatch.chdir(Path(__file__).parent.parent)
+
+    result = runner.invoke(
+        cli.app,
+        ["flow", "--repo", "streamlit/streamlit", "--weeks", "52", "--data-dir", str(data_dir)],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert result.output.startswith(
+        "FlowLens flow · streamlit/streamlit · 52 weeks, 2025-10-27 → 2026-10-25 "
+        "(as of 2026-10-29 05:00 UTC)\n"
+    )
+    out = data_dir / "out" / "flow_streamlit__streamlit.json"
+    assert result.output.endswith(f"\nWrote {out}\n")
+    report = json.loads(out.read_text())
+    assert (report["repo"], report["window"]["weeks"]) == ("streamlit/streamlit", 52)
+    assert len(report["throughput"]["weekly"]) == 52
+
+
+def test_flow_without_data_says_to_ingest_first(tmp_path):
+    result = runner.invoke(cli.app, ["flow", "--repo", "acme/shop", "--data-dir", str(tmp_path)])
+
+    assert result.exit_code == 1
+    assert "Run `flowlens ingest` first" in result.output
+
+
+def test_flow_needs_at_least_one_week(tmp_path):
+    result = runner.invoke(
+        cli.app, ["flow", "--repo", "acme/shop", "--weeks", "0", "--data-dir", str(tmp_path)]
+    )
+
+    assert result.exit_code == 2
