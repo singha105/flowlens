@@ -48,3 +48,50 @@
   - The quality report counts every ingested item, including old items updated in the window; metrics on Day 3 should window by when items finished
 - Manual steps for Arnab: none
 - Next: Day 3, flow metrics (cycle time, throughput, WIP, aging) from `work_items`
+
+## Day 3 — 2026-10-29
+- Done: flow metrics, `flowlens flow`, [METRICS.md](METRICS.md), and a synthetic ground-truth generator
+  - `metrics/flow.py`, pure functions over DataFrames: lead and cycle time (p50/p85/p95 and a histogram, per type and per bug/incident/hotfix/other group), weekly throughput with zero weeks kept, daily WIP, aging WIP against the type's cycle-time p50/p85, cumulative flow (to do, in progress, done), and PR flow in four stages with the bottleneck and a monthly breakdown
+  - `flowlens flow --repo owner/name --weeks 26` rebuilds the model, prints a compact table, and writes every series to `data/out/flow_<owner>__<name>.json` for the dashboard
+  - `tests/synthetic.py`: a seeded team simulation (Poisson arrivals, exponential wait to start, lognormal cycle times and PR stages, never-started and not-planned issues, bots, abandoned and unreviewed PRs) with brute-force oracles written as plain loops
+  - 254 offline tests (208 on Day 2). Every metric matches a brute-force count exactly, day by day and week by week; on a large history, cycle-time percentiles land within 10% of the true lognormal quantiles, throughput within 5% of the arrival rates, mean WIP within 5% of Little's law, and PR stage medians within 10%. Edge cases: no items, all in progress, same-day finishes, zero weeks, window boundaries, exclusions, abandoned PRs, never-started issues, starts dated after finishes, reviews after the merge. Ruff clean
+  - Demo run, streamlit/streamlit, 26 weeks, 4.5 s:
+    ```
+    FlowLens flow · streamlit/streamlit · 26 weeks, 2026-04-27 → 2026-10-25 (as of 2026-10-29 05:55 UTC)
+
+                                   n     p50     p85     p95
+    Cycle time  issues           266    4.0d  150.0d  471.6d
+                  bug            148    2.0d  161.0d  709.2d
+                  incident        35    1.5d   10.0d  126.6d
+                  other          118    6.0d  123.0d  284.1d
+                PRs              884    1.1d    8.1d   38.1d
+    Lead time   issues           370  264.3d 1059.2d 1616.9d
+                  bug            189    7.0d  795.9d 1296.8d
+                  incident        36    2.2d   35.1d  167.7d
+                  other          181  473.8d 1304.2d 1845.1d
+                PRs              884    1.1d    7.7d   38.0d
+
+    Throughput  issues 14.2/week (min 1, max 55) | PRs 34.0/week (min 8, max 99) | weeks with none: 0
+    WIP today   341 (issues 142, PRs 199) | aging > p85: 241 items (oldest issue #637, 2341 days)
+    PR flow     medians: first commit→open 1m | open→first review 28h | review→approve 0m | approve→merge 4h
+    Bottleneck  waiting for first review (89% of the summed stage medians)
+    ```
+- PM observations (streamlit, 2026-04-27 to 2026-10-25):
+  1. **A delivery SLE works for PRs and regressions, not for issues as a whole.** 85% of merged PRs finished within 8.1 days of their first commit (86% within 9), so "85% of PRs merged within 9 days" is supportable. Regressions (`type:regression`, the incident stand-in) are tight too: 85% fixed within 10 days. All issues together aren't: p50 is 4.0 days but p85 is 150, because the window includes backlog clean-up. 161 of the 370 issues closed were over a year old, and 55 closed in the week of 2026-07-20 alone.
+  2. **Waiting for first review is the PR bottleneck.** A median of 28 hours, 89% of the summed stage medians. Once a human reviews, the first review is usually the approval (504 of 884 PRs), and the merge follows about 4 hours later. A review rotation or a first-response target would shorten PR cycle time more than faster coding would. The AI reviewer is already changing this: merged PRs with a human review fell from about 100% through July to 27% in October, while merges rose to 222 that month (99 in the week of 2026-10-05). Day 5's change failure rate should check whether quality moved with it.
+  3. **WIP is mostly stale, so clean it up before using it as a signal.** 341 items are in progress against 48 delivered a week. By Little's law that's about 7 weeks in progress on average, while the median PR finishes in 1.1 days. 143 of the 199 open PRs are drafts and 167 are older than the PR p85 of 8.1 days; 74 in-progress issues are older than the issue p85 of 150 days, and the oldest was assigned 2,341 days ago (#637). Closing stale drafts and unassigning abandoned issues would make the aging-WIP list a useful daily alert; a limit on open PRs would keep it that way.
+- Decisions: the window is whole ISO weeks ending at the last Monday on or before the last successful ingest. The partial week is left out of throughput and durations, so Day 4 samples complete weeks only, and re-running on the same data gives the same numbers
+  - Percentiles are nearest rank (`numpy.percentile`, `inverted_cdf`), never interpolated, so "85% within p85" holds exactly
+  - Delivered means completed, closed with no reason, or merged. An abandoned PR leaves WIP when it closes but is never throughput
+  - A day's WIP is the state at midnight UTC at its end, so an item started and finished the same day is never WIP. Cumulative flow's "done" starts at 0 at the window start
+  - Durations are calendar days in UTC (PRD open question 4)
+  - PR stages: a review or approval after the merge counts as missing, each median is over the PRs that have both ends, and the bottleneck's share is of the summed stage medians, since medians don't add
+  - pandas 3.1 and numpy 2.5 added as dependencies
+- Known gaps: issue cycle time covers 72% of the issues delivered (the rest have no start signal), and PR coding time is invisible on streamlit, where the first commit is a median of 35 seconds before the PR opens
+  - Draft time counts as waiting for review (PR timelines aren't ingested), and changes-requested rounds aren't split out of "in review"
+  - The throughput total counts an issue and the PR that closed it separately; Day 4 should forecast one type at a time
+  - No `--as-of` yet: the window always ends at the last ingest. Day 4's backtest needs past cut-offs, and the pure functions already take any window
+  - PR size, in the PRD's original PR-flow definition, isn't reported yet (additions and deletions are already ingested)
+  - The quality report still counts the whole ingested history, not the flow window
+- Manual steps for Arnab: none
+- Next: Day 4, Monte Carlo "when" and "how many" forecasts sampled from the weekly throughput series, with a backtest

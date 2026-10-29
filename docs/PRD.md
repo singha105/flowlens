@@ -42,12 +42,13 @@ Non-goals for v1:
 
 | Metric | Definition |
 |---|---|
-| Cycle time | Time from work starting (first commit on the PR, else PR opened) to the work finishing (PR merged, or linked issue closed as completed). |
-| Lead time | Time from an issue being created to it closing as completed. |
-| Throughput | Items finished per week: issues closed as completed, PRs merged. |
-| WIP | Items started but not finished at a given point in time. |
-| Aging WIP | Age of each in-progress item, compared with historical cycle-time percentiles. |
-| PR flow breakdown | A PR's life split into time to first review and review to merge, alongside size (lines added + deleted). |
+| Cycle time | Time from work starting (a PR's first commit or opening; an issue's first assignment, linked PR, or start label) to the item being delivered (PR merged, issue closed as completed). |
+| Lead time | Time from an issue or PR being opened to it being delivered. |
+| Throughput | Items delivered per ISO week, weeks with none kept as 0: issues closed as completed, PRs merged. |
+| WIP | Items started but not finished at the end of each day. |
+| Aging WIP | Age of each in-progress item, compared with its type's cycle-time p50 and p85. |
+| Cumulative flow | Daily counts of items to do, in progress, and done. |
+| PR flow breakdown | A merged PR's life in four stages (first commit → opened → first review → first approval → merged), with the median of each and the bottleneck. |
 | Monte Carlo "when" | Distribution of completion dates for N items, from resampling historical weekly throughput. |
 | Monte Carlo "how many" | Distribution of items finished by a target date. |
 | Forecast backtest | How often a forecast made at a past date, at a given percentile, covered what actually happened. |
@@ -56,7 +57,7 @@ Non-goals for v1:
 | Change failure rate | Share of deployments followed within 7 days by a revert, a hotfix, or an incident-labelled issue. |
 | Failed deployment recovery time | Time from a failure signal to the next successful deployment or the incident closing. |
 
-Durations are reported as 50th/85th/95th percentiles rather than means, because cycle-time distributions are heavily skewed.
+Durations are reported as 50th/85th/95th percentiles rather than means, because cycle-time distributions are heavily skewed. [METRICS.md](METRICS.md) has the exact formulas, the GitHub signals behind each metric, and its limitations.
 
 ## Success criteria for v1
 
@@ -81,6 +82,6 @@ Durations are reported as 50th/85th/95th percentiles rather than means, because 
 1. ~~What starts the clock for an issue with no linked PR: assignment, a label, or creation?~~ Answered on Day 2: the earliest of first assignment, the first linked PR being opened, or a start label, configurable in `flowlens.yaml`. An issue with none of these before it closed never started, and the quality report counts how many there are.
 2. ~~Should bot-authored PRs (Dependabot, Renovate) be excluded by default or shown as their own series?~~ Answered on Day 2: excluded by default (`exclude.bots`), kept in the model, and counted in the quality report. Bot reviews never count as a first review or an approval.
 3. ~~For reopened items, do we measure to the first close or the last?~~ Answered on Day 2: to the last. A reopened issue is done when it finally closes; signals before the first close still count as its start.
-4. Calendar days or business days for cycle time?
+4. ~~Calendar days or business days for cycle time?~~ Answered on Day 3: calendar days in UTC. Open-source contributors work across time zones and weekends, so there is no one working calendar to use; METRICS.md lists it as a limitation.
 5. ~~Which deploy signal wins when a repo has both releases and Deployments?~~ Answered on Day 2: neither wins automatically. `deployment_source` names one, releases by default, because many repos' Deployments go to preview or nightly environments rather than production. The quality report lists every signal it found.
 6. ~~Which public repo makes the best case study: active, consistently labelled, and with real deployments?~~ Answered on Day 2: streamlit/streamlit; see [decisions/0001-demo-repo.md](decisions/0001-demo-repo.md).
