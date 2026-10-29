@@ -1,0 +1,185 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4727,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "i14614": {
+        "id": "I_kwDODKw3uc8AAAABVjP1mA",
+        "number": 14614,
+        "title": "gh skill: document that issue view --comments and --json are mutually exclusive",
+        "url": "https://github.com/cli/cli/issues/14614",
+        "state": "CLOSED",
+        "stateReason": "COMPLETED",
+        "createdAt": "2026-10-07T07:35:18Z",
+        "updatedAt": "2026-10-07T10:13:19Z",
+        "closedAt": "2026-10-07T10:13:19Z",
+        "author": {
+          "login": "filippolmt",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "bug"
+            },
+            {
+              "name": "priority-3"
+            },
+            {
+              "name": "core"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": [
+            {
+              "login": "babakks"
+            },
+            {
+              "login": "Copilot"
+            }
+          ]
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoRXacgABqzMyNjc5NjU5NjMy"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODKw3uc8AAAABVjP1mM8AAAAHmzQrGA",
+              "createdAt": "2026-10-07T07:35:28Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODKw3uc8AAAABVjP1mM8AAAAHm2bEzA",
+              "createdAt": "2026-10-07T08:23:41Z",
+              "actor": {
+                "login": "babakks"
+              },
+              "label": {
+                "name": "bug"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODKw3uc8AAAABVjP1mM8AAAAHm2bFBQ",
+              "createdAt": "2026-10-07T08:23:41Z",
+              "actor": {
+                "login": "babakks"
+              },
+              "label": {
+                "name": "priority-3"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODKw3uc8AAAABVjP1mM8AAAAHm2bFOA",
+              "createdAt": "2026-10-07T08:23:41Z",
+              "actor": {
+                "login": "babakks"
+              },
+              "label": {
+                "name": "core"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODKw3uc8AAAABVjP1mM8AAAAHm2bvVA",
+              "createdAt": "2026-10-07T08:23:51Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "needs-triage"
+              }
+            },
+            {
+              "__typename": "AssignedEvent",
+              "id": "AE_lADODKw3uc8AAAABVjP1mM8AAAAHm2egjA",
+              "createdAt": "2026-10-07T08:24:31Z",
+              "actor": {
+                "login": "babakks"
+              },
+              "assignee": {
+                "login": "copilot-swe-agent"
+              }
+            },
+            {
+              "__typename": "AssignedEvent",
+              "id": "AE_lADODKw3uc8AAAABVjP1mM8AAAAHm2ehkw",
+              "createdAt": "2026-10-07T08:24:32Z",
+              "actor": {
+                "login": "babakks"
+              },
+              "assignee": {
+                "login": "babakks"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODKw3uc8AAAADY8cXIw",
+              "createdAt": "2026-10-07T08:24:39Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "copilot-swe-agent"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 14616,
+                "createdAt": "2026-10-07T08:24:38Z",
+                "repository": {
+                  "nameWithOwner": "cli/cli"
+                }
+              }
+            },
+            {
+              "__typename": "ConnectedEvent",
+              "id": "COE_lADODKw3uc8AAAABVjP1mM8AAAAHm2gICA",
+              "createdAt": "2026-10-07T08:24:54Z",
+              "actor": {
+                "login": "copilot-swe-agent"
+              },
+              "subject": {
+                "__typename": "PullRequest",
+                "number": 14616,
+                "createdAt": "2026-10-07T08:24:38Z",
+                "repository": {
+                  "nameWithOwner": "cli/cli"
+                }
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODKw3uc8AAAABVjP1mM8AAAAHm9wIcA",
+              "createdAt": "2026-10-07T10:13:20Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "babakks"
+              },
+              "closer": {
+                "__typename": "PullRequest",
+                "number": 14616,
+                "createdAt": "2026-10-07T08:24:38Z",
+                "repository": {
+                  "nameWithOwner": "cli/cli"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

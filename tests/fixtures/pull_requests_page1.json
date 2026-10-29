@@ -3,8 +3,8 @@
     "rateLimit": {
       "limit": 5000,
       "cost": 1,
-      "remaining": 4996,
-      "resetAt": "2026-10-29T05:47:49Z"
+      "remaining": 4730,
+      "resetAt": "2026-10-29T05:37:01Z"
     },
     "repository": {
       "pullRequests": {
@@ -14,6 +14,7 @@
         },
         "nodes": [
           {
+            "id": "PR_kwDOAAs0JM7Je6bh",
             "number": 519,
             "title": "Improved speedups",
             "url": "https://github.com/pallets/markupsafe/pull/519",
@@ -26,6 +27,7 @@
             "additions": 153,
             "deletions": 108,
             "baseRefName": "main",
+            "mergeCommit": null,
             "author": {
               "login": "thewhaleking",
               "__typename": "User"
@@ -43,11 +45,19 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           },
           {
+            "id": "PR_kwDOAAs0JM8AAAABGuPaYg",
             "number": 539,
             "title": "Add line for change log",
             "url": "https://github.com/pallets/markupsafe/pull/539",
@@ -60,6 +70,7 @@
             "additions": 1,
             "deletions": 0,
             "baseRefName": "main",
+            "mergeCommit": null,
             "author": {
               "login": "ali33600",
               "__typename": "User"
@@ -77,11 +88,19 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           },
           {
+            "id": "PR_kwDOAAs0JM8AAAABGNxW9Q",
             "number": 534,
             "title": "remove updating release",
             "url": "https://github.com/pallets/markupsafe/pull/534",
@@ -94,6 +113,9 @@
             "additions": 2,
             "deletions": 32,
             "baseRefName": "stable",
+            "mergeCommit": {
+              "oid": "e2a7d4b05faa066ebe6e1fd55716f5efe0eeec3e"
+            },
             "author": {
               "login": "davidism",
               "__typename": "User"
@@ -111,11 +133,19 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           },
           {
+            "id": "PR_kwDOAAs0JM8AAAABGOGBOQ",
             "number": 535,
             "title": "add zizmor to scan workflows",
             "url": "https://github.com/pallets/markupsafe/pull/535",
@@ -128,6 +158,9 @@
             "additions": 73,
             "deletions": 23,
             "baseRefName": "stable",
+            "mergeCommit": {
+              "oid": "09ec93a3267f321ca3db7f47b9eef2756d5c4a22"
+            },
             "author": {
               "login": "davidism",
               "__typename": "User"
@@ -145,7 +178,14 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           }

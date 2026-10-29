@@ -1,0 +1,130 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4726,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "i11926": {
+        "id": "PR_kwDODKw3uc6tk76t",
+        "number": 11926,
+        "title": "Bump Go to 1.25.3",
+        "url": "https://github.com/cli/cli/pull/11926",
+        "state": "MERGED",
+        "isDraft": false,
+        "createdAt": "2025-10-14T03:20:49Z",
+        "updatedAt": "2026-10-24T18:37:49Z",
+        "mergedAt": "2025-11-03T18:32:09Z",
+        "closedAt": "2025-11-03T18:32:10Z",
+        "additions": 7,
+        "deletions": 15,
+        "baseRefName": "trunk",
+        "mergeCommit": {
+          "oid": "e73a0e077a082d792471cd5e7c1ad1cf277514a6"
+        },
+        "author": {
+          "login": "github-actions",
+          "__typename": "Bot"
+        },
+        "labels": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "authoredDate": "2025-10-14T03:20:43Z",
+                "committedDate": "2025-10-14T03:20:43Z"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMC0yNFQxODozNzo0OVq0MjAyNi0xMC0yNFQxODozNzo0OVrPAAAAAVAjKHw="
+          },
+          "nodes": [
+            {
+              "id": "PRR_kwDODKw3uc7K5elS",
+              "state": "COMMENTED",
+              "submittedAt": "2025-10-31T12:32:12Z",
+              "author": {
+                "login": "babakks",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc7K5gCs",
+              "state": "COMMENTED",
+              "submittedAt": "2025-10-31T12:34:17Z",
+              "author": {
+                "login": "copilot-pull-request-reviewer",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc7K_DjI",
+              "state": "APPROVED",
+              "submittedAt": "2025-10-31T18:18:48Z",
+              "author": {
+                "login": "BagToad",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc7K_Jvp",
+              "state": "CHANGES_REQUESTED",
+              "submittedAt": "2025-10-31T18:23:12Z",
+              "author": {
+                "login": "BagToad",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc7LYgxD",
+              "state": "APPROVED",
+              "submittedAt": "2025-11-03T17:41:28Z",
+              "author": {
+                "login": "BagToad",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc7M8gr2",
+              "state": "COMMENTED",
+              "submittedAt": "2025-11-08T14:20:39Z",
+              "author": {
+                "login": "barutcakmak9-dev",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc7M8gtq",
+              "state": "COMMENTED",
+              "submittedAt": "2025-11-08T14:21:02Z",
+              "author": {
+                "login": "barutcakmak9-dev",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODKw3uc8AAAABUCMofA",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-24T18:37:49Z",
+              "author": {
+                "login": "6zwrksrv9h-dot",
+                "__typename": "User"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

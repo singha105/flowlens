@@ -3,7 +3,7 @@
     "rateLimit": {
       "limit": 5000,
       "cost": 1,
-      "remaining": 4991,
+      "remaining": 4732,
       "resetAt": "2026-10-29T05:37:01Z"
     },
     "repository": {
@@ -14,6 +14,7 @@
         },
         "nodes": [
           {
+            "id": "I_kwDOAAs0JM8AAAABUZxh3w",
             "number": 533,
             "title": "`striptags` should remove unclosed tags",
             "url": "https://github.com/pallets/markupsafe/issues/533",
@@ -35,9 +36,39 @@
                   "login": "davidism"
                 }
               ]
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoQIC8nABqzMyMzk5MDg3MzI3"
+              },
+              "nodes": [
+                {
+                  "__typename": "AssignedEvent",
+                  "id": "AE_lADOAAs0JM8AAAABUZxh388AAAAHgvZPDQ",
+                  "createdAt": "2026-10-01T14:51:43Z",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "assignee": {
+                    "login": "davidism"
+                  }
+                },
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM8AAAABUZxh388AAAAHiyLW3w",
+                  "createdAt": "2026-10-03T13:45:10Z",
+                  "stateReason": "NOT_PLANNED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                }
+              ]
             }
           },
           {
+            "id": "I_kwDOAAs0JM7rSCOW",
             "number": 517,
             "title": "Enable CI Support for ppc64le (IBM Power) Architecture",
             "url": "https://github.com/pallets/markupsafe/issues/517",
@@ -55,9 +86,45 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoPzLyagBqzMyMzM3MDI3NjAz"
+              },
+              "nodes": [
+                {
+                  "__typename": "CrossReferencedEvent",
+                  "id": "CRE_kwDOAAs0JM8AAAABG5hiKQ",
+                  "createdAt": "2026-02-16T12:03:03Z",
+                  "willCloseTarget": false,
+                  "actor": {
+                    "login": "PankhudiJ17"
+                  },
+                  "source": {
+                    "__typename": "PullRequest",
+                    "number": 518,
+                    "createdAt": "2026-02-16T12:03:02Z",
+                    "repository": {
+                      "nameWithOwner": "pallets/markupsafe"
+                    }
+                  }
+                },
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM7rSCOWzwAAAAeHb-IT",
+                  "createdAt": "2026-10-02T13:26:49Z",
+                  "stateReason": "COMPLETED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                }
+              ]
             }
           },
           {
+            "id": "I_kwDOAAs0JM7q_GD6",
             "number": 515,
             "title": "Add Android and iOS wheels",
             "url": "https://github.com/pallets/markupsafe/issues/515",
@@ -75,6 +142,41 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoPzZv-ABqzMyMzM4MDU0OTY0"
+              },
+              "nodes": [
+                {
+                  "__typename": "CrossReferencedEvent",
+                  "id": "CRE_kwDOAAs0JM8AAAABGtJElw",
+                  "createdAt": "2026-02-14T21:48:44Z",
+                  "willCloseTarget": false,
+                  "actor": {
+                    "login": "timrid"
+                  },
+                  "source": {
+                    "__typename": "PullRequest",
+                    "number": 516,
+                    "createdAt": "2026-02-14T21:48:43Z",
+                    "repository": {
+                      "nameWithOwner": "pallets/markupsafe"
+                    }
+                  }
+                },
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM7q_GD6zwAAAAeHf480",
+                  "createdAt": "2026-10-02T13:42:04Z",
+                  "stateReason": "COMPLETED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                }
+              ]
             }
           }
         ]

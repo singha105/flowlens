@@ -3,8 +3,8 @@
     "rateLimit": {
       "limit": 5000,
       "cost": 1,
-      "remaining": 4990,
-      "resetAt": "2026-10-29T05:37:01Z"
+      "remaining": 4939,
+      "resetAt": "2026-10-29T05:47:49Z"
     },
     "repository": {
       "issues": {
@@ -14,6 +14,7 @@
         },
         "nodes": [
           {
+            "id": "I_kwDOAAs0JM8AAAABPp7duQ",
             "number": 530,
             "title": "Please publish Python 3.15 wheels on PyPI",
             "url": "https://github.com/pallets/markupsafe/issues/530",
@@ -31,9 +32,40 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoPzNXAABqzMyMzM3MTM4MjQ1"
+              },
+              "nodes": [
+                {
+                  "__typename": "CrossReferencedEvent",
+                  "id": "CRE_kwDOAdw-Nc8AAAADNldM7g",
+                  "createdAt": "2026-10-01T17:22:31Z",
+                  "willCloseTarget": false,
+                  "actor": {
+                    "login": "nsoranzo"
+                  },
+                  "source": {
+                    "__typename": "Issue"
+                  }
+                },
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM8AAAABPp7duc8AAAAHh3GSRQ",
+                  "createdAt": "2026-10-02T13:28:32Z",
+                  "stateReason": "COMPLETED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                }
+              ]
             }
           },
           {
+            "id": "I_kwDOAAs0JM8AAAABUW38yA",
             "number": 531,
             "title": "[rejected AI] Markup.format escapes a plain string returned by __html__",
             "url": "https://github.com/pallets/markupsafe/issues/531",
@@ -55,9 +87,39 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoPeCEuABqzMyMjUyMTU0NjQy"
+              },
+              "nodes": [
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM8AAAABUW38yM8AAAAHgmC1DQ",
+                  "createdAt": "2026-10-01T12:48:05Z",
+                  "stateReason": "NOT_PLANNED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                },
+                {
+                  "__typename": "LabeledEvent",
+                  "id": "LE_lADOAAs0JM8AAAABUW38yM8AAAAHgmDTEg",
+                  "createdAt": "2026-10-01T12:48:12Z",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "label": {
+                    "name": "rejected AI"
+                  }
+                }
+              ]
             }
           },
           {
+            "id": "I_kwDOAAs0JM77YwFy",
             "number": 521,
             "title": "Performance regression in striptags",
             "url": "https://github.com/pallets/markupsafe/issues/521",
@@ -75,6 +137,75 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoPl1CUABqzMyMjkxOTk1MTgw"
+              },
+              "nodes": [
+                {
+                  "__typename": "CrossReferencedEvent",
+                  "id": "CRE_kwDOAS1I7M8AAAABW-4h8w",
+                  "createdAt": "2026-04-07T13:39:11Z",
+                  "willCloseTarget": false,
+                  "actor": {
+                    "login": "MohamedKasem99"
+                  },
+                  "source": {
+                    "__typename": "PullRequest",
+                    "number": 257889,
+                    "createdAt": "2026-04-07T12:59:57Z",
+                    "repository": {
+                      "nameWithOwner": "odoo/odoo"
+                    }
+                  }
+                },
+                {
+                  "__typename": "CrossReferencedEvent",
+                  "id": "CRE_kwDOAAs0JM8AAAABX6qkqQ",
+                  "createdAt": "2026-04-10T09:41:36Z",
+                  "willCloseTarget": false,
+                  "actor": {
+                    "login": "kmagusiak"
+                  },
+                  "source": {
+                    "__typename": "PullRequest",
+                    "number": 522,
+                    "createdAt": "2026-04-10T09:41:35Z",
+                    "repository": {
+                      "nameWithOwner": "pallets/markupsafe"
+                    }
+                  }
+                },
+                {
+                  "__typename": "CrossReferencedEvent",
+                  "id": "CRE_kwDOTXydqs8AAAAB7_FCIw",
+                  "createdAt": "2026-07-14T04:40:46Z",
+                  "willCloseTarget": false,
+                  "actor": {
+                    "login": "alguemqualquer123"
+                  },
+                  "source": {
+                    "__typename": "PullRequest",
+                    "number": 1,
+                    "createdAt": "2026-07-14T04:40:45Z",
+                    "repository": {
+                      "nameWithOwner": "alguemqualquer123/markupsafe"
+                    }
+                  }
+                },
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM77YwFyzwAAAAeEwL4s",
+                  "createdAt": "2026-10-01T21:53:12Z",
+                  "stateReason": "COMPLETED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                }
+              ]
             }
           }
         ]

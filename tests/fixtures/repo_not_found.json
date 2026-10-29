@@ -3,8 +3,8 @@
     "rateLimit": {
       "limit": 5000,
       "cost": 1,
-      "remaining": 4987,
-      "resetAt": "2026-10-29T05:37:01Z"
+      "remaining": 4938,
+      "resetAt": "2026-10-29T05:47:49Z"
     },
     "repository": null
   },

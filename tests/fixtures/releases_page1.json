@@ -1,0 +1,100 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4936,
+      "resetAt": "2026-10-29T05:47:49Z"
+    },
+    "repository": {
+      "releases": {
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0wOS0wMVQxNjozMjozMlrOFrDUaw=="
+        },
+        "nodes": [
+          {
+            "id": "RE_kwDODCoeTs4ZBgcu",
+            "tagName": "1.66.1",
+            "name": "1.66.1",
+            "url": "https://github.com/streamlit/streamlit/releases/tag/1.66.1",
+            "isDraft": false,
+            "isPrerelease": false,
+            "createdAt": "2026-10-21T16:19:49Z",
+            "publishedAt": "2026-10-21T17:03:06Z",
+            "tagCommit": {
+              "oid": "ca6718b7d3d788c31c97d1bc9144fd8388168f57"
+            },
+            "author": {
+              "login": "github-actions[bot]"
+            }
+          },
+          {
+            "id": "RE_kwDODCoeTs4YnKUu",
+            "tagName": "1.66.0",
+            "name": "1.66.0",
+            "url": "https://github.com/streamlit/streamlit/releases/tag/1.66.0",
+            "isDraft": false,
+            "isPrerelease": false,
+            "createdAt": "2026-10-14T14:45:29Z",
+            "publishedAt": "2026-10-14T16:08:00Z",
+            "tagCommit": {
+              "oid": "269e552f276f5757b2903174da18e083defb325b"
+            },
+            "author": {
+              "login": "github-actions[bot]"
+            }
+          },
+          {
+            "id": "RE_kwDODCoeTs4X-K6Z",
+            "tagName": "1.65.0",
+            "name": "1.65.0",
+            "url": "https://github.com/streamlit/streamlit/releases/tag/1.65.0",
+            "isDraft": false,
+            "isPrerelease": false,
+            "createdAt": "2026-10-02T18:55:08Z",
+            "publishedAt": "2026-10-02T21:40:41Z",
+            "tagCommit": {
+              "oid": "ff22743ac9b00f19f7416d6b2cf4be19b0fa37ea"
+            },
+            "author": {
+              "login": "github-actions[bot]"
+            }
+          },
+          {
+            "id": "RE_kwDODCoeTs4XNd6W",
+            "tagName": "1.64.0",
+            "name": "1.64.0",
+            "url": "https://github.com/streamlit/streamlit/releases/tag/1.64.0",
+            "isDraft": false,
+            "isPrerelease": false,
+            "createdAt": "2026-09-15T18:32:04Z",
+            "publishedAt": "2026-09-15T19:13:58Z",
+            "tagCommit": {
+              "oid": "bab1da98cadfc6d35e0a7c3cd2cc0bb3a01555d5"
+            },
+            "author": {
+              "login": "github-actions[bot]"
+            }
+          },
+          {
+            "id": "RE_kwDODCoeTs4WsNRr",
+            "tagName": "1.63.0",
+            "name": "1.63.0",
+            "url": "https://github.com/streamlit/streamlit/releases/tag/1.63.0",
+            "isDraft": false,
+            "isPrerelease": false,
+            "createdAt": "2026-09-01T16:32:32Z",
+            "publishedAt": "2026-09-01T17:12:37Z",
+            "tagCommit": {
+              "oid": "cb9aba9ff4d89c496ed15fd1aa7ee1fef19e0c24"
+            },
+            "author": {
+              "login": "github-actions[bot]"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

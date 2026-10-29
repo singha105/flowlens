@@ -3,7 +3,7 @@
     "rateLimit": {
       "limit": 5000,
       "cost": 1,
-      "remaining": 4989,
+      "remaining": 4731,
       "resetAt": "2026-10-29T05:37:01Z"
     },
     "repository": {
@@ -14,6 +14,7 @@
         },
         "nodes": [
           {
+            "id": "I_kwDOAAs0JM8AAAABW94lsg",
             "number": 540,
             "title": "Please provide universal2 wheels for latest PyPI release (3.0.4)",
             "url": "https://github.com/pallets/markupsafe/issues/540",
@@ -31,9 +32,28 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABoTbLu-ABqzMzMTY2NDUwMjg0"
+              },
+              "nodes": [
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM8AAAABW94lss8AAAAHuN_ebA",
+                  "createdAt": "2026-10-13T19:44:44Z",
+                  "stateReason": "NOT_PLANNED",
+                  "actor": {
+                    "login": "davidism"
+                  },
+                  "closer": null
+                }
+              ]
             }
           },
           {
+            "id": "I_kwDOAAs0JM7OdCJ9",
             "number": 509,
             "title": "sdist of markupsafe 3.0.3 fails to build under Python 3.9 w/ pip 20.3.4 (e.g. Debian Bullseye version of Raspberry Pi OS)",
             "url": "https://github.com/pallets/markupsafe/issues/509",
@@ -51,6 +71,24 @@
             },
             "assignees": {
               "nodes": []
+            },
+            "timelineItems": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": "Y3Vyc29yOnYyOpPPAAABmZTf3HgBqzE5OTc5NDg0NjEw"
+              },
+              "nodes": [
+                {
+                  "__typename": "ClosedEvent",
+                  "id": "CE_lADOAAs0JM7OdCJ9zwAAAASm3r3C",
+                  "createdAt": "2025-09-29T09:48:43Z",
+                  "stateReason": "NOT_PLANNED",
+                  "actor": {
+                    "login": "foosel"
+                  },
+                  "closer": null
+                }
+              ]
             }
           }
         ]

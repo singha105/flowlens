@@ -1,0 +1,1710 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4725,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "deployments": {
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "Y3Vyc29yOnYyOpK0MjAyNi0wOS0xNlQwNDo1NzowNFrPAAAAAYHimPo="
+        },
+        "nodes": [
+          {
+            "id": "DE_kwDODCoeTs8AAAABuVWMyg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-29T04:51:33Z",
+            "updatedAt": "2026-10-29T04:54:54Z",
+            "commitOid": "6cd662a8627c0cd559596c4a6f1b35347c96fe42",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "FAILURE",
+              "createdAt": "2026-10-29T04:54:54Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE3J2Zow",
+                  "state": "FAILURE",
+                  "createdAt": "2026-10-29T04:54:54Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE3JtWoQ",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-29T04:51:38Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE3JtOVQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-29T04:51:36Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE3JtLKg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-29T04:51:35Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABt7tyug",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-28T04:53:24Z",
+            "updatedAt": "2026-10-28T04:56:42Z",
+            "commitOid": "dd3ab9df1b06d47e953e025f14bbc116dab5d755",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-28T04:56:42Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE1yRSWw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-28T04:56:42Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE1yI-VQ",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-28T04:53:29Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE1yI1_g",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-28T04:53:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE1yIzyQ",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-28T04:53:25Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABtiOUsQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-27T05:00:21Z",
+            "updatedAt": "2026-10-27T05:04:34Z",
+            "commitOid": "591eae800a90eedb6c5c12e58d775a5e3b21279c",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-27T05:04:34Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE0XH3KA",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-27T05:04:34Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE0W7Nxg",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-27T05:00:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE0W7F1Q",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-27T05:00:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAE0W7Cxw",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-27T05:00:22Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABtYUsrg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-26T18:36:43Z",
+            "updatedAt": "2026-10-26T18:40:32Z",
+            "commitOid": "76ac4836ecd332cbedb8f9df5ecc1dbfc568870a",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-26T18:40:32Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzxqY_w",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-26T18:40:32Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzxXnFw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-26T18:36:49Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzxXZBw",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-26T18:36:46Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzxXYhA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-26T18:36:46Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzxXSDg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-26T18:36:45Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABtYA_iA",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-26T18:21:48Z",
+            "updatedAt": "2026-10-26T18:25:26Z",
+            "commitOid": "6688c0faa5f5f4b2007bdff34c3b02ecf550506d",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-26T18:25:26Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzwfdWw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-26T18:25:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzwPFXw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-26T18:21:53Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzwO3QA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-26T18:21:50Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEzwOxHA",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-26T18:21:49Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABtJKDUw",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-26T05:01:40Z",
+            "updatedAt": "2026-10-26T05:05:45Z",
+            "commitOid": "1b89e1f30d190f21905ede269c7ba6a6b0d56709",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-26T05:05:45Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEy0gAGQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-26T05:05:45Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEy0TlJg",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-26T05:01:45Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEy0TagQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-26T05:01:42Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEy0TVDQ",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-26T05:01:41Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABssVXZw",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-24T04:55:12Z",
+            "updatedAt": "2026-10-24T04:59:43Z",
+            "commitOid": "76ac4836ecd332cbedb8f9df5ecc1dbfc568870a",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-24T04:59:43Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEw9NLrw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-24T04:59:43Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEw9C2xw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-24T04:55:18Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEw9CtUg",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-24T04:55:14Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEw9CqCg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-24T04:55:13Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABr8hS_Q",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-22T04:55:50Z",
+            "updatedAt": "2026-10-22T04:59:38Z",
+            "commitOid": "f478c9783be8099f1d394d02dea77bd0697d93ea",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-22T04:59:38Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEtZIWPQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-22T04:59:38Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEtZA_4A",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-22T04:55:55Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEtZA5vQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-22T04:55:52Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEtZA3gQ",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-22T04:55:51Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABrwgq8A",
+            "environment": "release",
+            "task": "deploy",
+            "createdAt": "2026-10-21T16:35:26Z",
+            "updatedAt": "2026-10-21T17:03:11Z",
+            "commitOid": "ca6718b7d3d788c31c97d1bc9144fd8388168f57",
+            "ref": {
+              "name": "1.66.1"
+            },
+            "creator": {
+              "login": "lukasmasuch"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-21T17:03:11Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEs9oTgg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-21T17:03:11Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEs9cJAw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-21T16:59:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEs9b-dQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-21T16:59:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEs8L8bA",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-21T16:35:27Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABrjtGrg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-21T04:56:49Z",
+            "updatedAt": "2026-10-21T05:00:43Z",
+            "commitOid": "9d325bfc2b938a888e37d5d5791b80b8a8c9a3da",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-21T05:00:43Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEsBcO-Q",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-21T05:00:43Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEsBUjng",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-21T04:56:54Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEsBUcsQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-21T04:56:51Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEsBUaHQ",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-21T04:56:50Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABrKwCCg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-20T04:57:37Z",
+            "updatedAt": "2026-10-20T05:01:16Z",
+            "commitOid": "5e45129c60cca37f420f5adbf65413d2f8a8d702",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-20T05:01:16Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAErEeHHg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-20T05:01:16Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAErEXJkw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-20T04:57:42Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAErEXEAA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-20T04:57:39Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAErEXCXw",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-20T04:57:38Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABqyFJog",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-19T04:58:28Z",
+            "updatedAt": "2026-10-19T05:02:04Z",
+            "commitOid": "4d1a8568ff8f4e373b7cd9fb1c2c32b58988d1e6",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-19T05:02:04Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEqI3rBg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-19T05:02:04Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEqIxMMA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-19T04:58:33Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEqIxIJw",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-19T04:58:30Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEqIxGCA",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-19T04:58:29Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABqi6CrQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-18T04:56:18Z",
+            "updatedAt": "2026-10-18T05:00:23Z",
+            "commitOid": "4278206f51bde8026a20c7d91c4ef473fece6c69",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-18T05:00:23Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpjqgOA",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-18T05:00:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpjlykA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-18T04:56:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpjlu0g",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-18T04:56:20Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpjltYg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-18T04:56:19Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABqUeeJQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-17T04:55:17Z",
+            "updatedAt": "2026-10-17T04:58:30Z",
+            "commitOid": "4278206f51bde8026a20c7d91c4ef473fece6c69",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-17T04:58:30Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpAajJg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-17T04:58:30Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpAWZxw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-17T04:55:21Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpAWWlA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-17T04:55:19Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEpAWU9g",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-17T04:55:18Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABpkEe3g",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-15T04:57:36Z",
+            "updatedAt": "2026-10-15T05:01:19Z",
+            "commitOid": "011f7040931b85dca39d7a007dadf6b76cf0d174",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-15T05:01:19Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEnMJ0Jg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-15T05:01:19Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEnMC5gw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-15T04:57:41Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEnMC0FA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-15T04:57:39Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEnMCyCw",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-15T04:57:38Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABpVuyJA",
+            "environment": "release",
+            "task": "deploy",
+            "createdAt": "2026-10-14T15:09:57Z",
+            "updatedAt": "2026-10-14T16:08:06Z",
+            "commitOid": "269e552f276f5757b2903174da18e083defb325b",
+            "ref": {
+              "name": "1.66.0"
+            },
+            "creator": {
+              "login": "lukasmasuch"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-14T16:08:06Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmsjBOw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-14T16:08:06Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmsXUGA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-14T16:04:42Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmsXJAQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-14T16:04:39Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmpXgQg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-14T15:09:58Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABpKT7Jw",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-14T04:58:32Z",
+            "updatedAt": "2026-10-14T05:02:06Z",
+            "commitOid": "4cf7082877d896f563162d040a23ae0bc6fc1c23",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-14T05:02:06Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmOGwUQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-14T05:02:06Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmN_2Xg",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-14T04:58:36Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmN_woA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-14T04:58:33Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEmN_u4g",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-14T04:58:33Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABow11lQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-13T05:04:46Z",
+            "updatedAt": "2026-10-13T05:08:10Z",
+            "commitOid": "5557b5ac644375e8b9d2c4d6f1449b3e08fa2993",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-13T05:08:10Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAElRyxNA",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-13T05:08:10Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAElRsdUw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-13T05:04:51Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAElRsX9w",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-13T05:04:48Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAElRsVWw",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-13T05:04:47Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABoaUYzg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-12T05:08:15Z",
+            "updatedAt": "2026-10-12T05:11:46Z",
+            "commitOid": "669ee0e4fa3ac900602b5ec479dbbb9e36ce7279",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-12T05:11:46Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEkczQ4Q",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-12T05:11:46Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEkctq-A",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-12T05:08:20Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEkctmUg",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-12T05:08:17Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEkctk8w",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-12T05:08:16Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABoLRuqg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-11T04:58:25Z",
+            "updatedAt": "2026-10-11T05:02:11Z",
+            "commitOid": "d54a3f557f6e4bc77c2a09f06fe1e38e31ac44ea",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-11T05:02:11Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEj5514A",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-11T05:02:11Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEj51IGw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-11T04:58:29Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEj51Fgg",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-11T04:58:27Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEj51EHg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-11T04:58:26Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABn9JS8w",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-10T04:56:21Z",
+            "updatedAt": "2026-10-10T05:00:41Z",
+            "commitOid": "a01cad480dfd8cbe0d72cdef3c723f0ad5a97619",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-10T05:00:40Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEjZI91Q",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-10T05:00:40Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEjZDu4g",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-10T04:56:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEjZDqoA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-10T04:56:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEjZDpTw",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-10T04:56:22Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABnnN91w",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-09T04:59:51Z",
+            "updatedAt": "2026-10-09T05:03:18Z",
+            "commitOid": "a936d21ff544c38b032cd06fc742671a1b16280f",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-09T05:03:18Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEiln12w",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-09T05:03:18Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEilhheQ",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-09T04:59:56Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEilhcwA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-09T04:59:53Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEilha4Q",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-09T04:59:52Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABnOsyxA",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-08T05:00:27Z",
+            "updatedAt": "2026-10-08T05:04:10Z",
+            "commitOid": "2cba252cfcd3692e24c6ce32d9d071b813dde6d8",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-08T05:04:10Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEhsd0_A",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-08T05:04:10Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEhsW8fg",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-08T05:00:32Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEhsW2zg",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-08T05:00:29Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEhsW06w",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-08T05:00:28Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABm2UliA",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-07T04:58:09Z",
+            "updatedAt": "2026-10-07T05:01:17Z",
+            "commitOid": "e73c565eee36df083330c56543db69c2d3589b0b",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-07T05:01:17Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEg0gSFw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-07T05:01:17Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEg0avHg",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-07T04:58:13Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEg0aqjA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-07T04:58:10Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEg0ao3g",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-07T04:58:09Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABmdhx7g",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-06T04:58:43Z",
+            "updatedAt": "2026-10-06T05:02:32Z",
+            "commitOid": "8353849713f9569e96915399859a6f42a6a0ce06",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-06T05:02:32Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEf7xZJQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-06T05:02:32Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEf7qegA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-06T04:58:48Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEf7qZvw",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-06T04:58:45Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEf7qYEg",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-06T04:58:44Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABmGedKQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-05T05:18:46Z",
+            "updatedAt": "2026-10-05T05:22:06Z",
+            "commitOid": "25816d8952e08f2d48985801e1b15eccc0c664f4",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-05T05:22:06Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEfHW0cw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-05T05:22:06Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEfHRv1g",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-05T05:18:50Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEfHRsCQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-05T05:18:48Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEfHRqnQ",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-05T05:18:47Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABl46IUA",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-04T06:21:32Z",
+            "updatedAt": "2026-10-04T06:24:26Z",
+            "commitOid": "7716a0c0bbbbcfe739ba4601d27ebdbcf630432f",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-04T06:24:26Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeo3sUQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-04T06:24:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeo0yyA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-04T06:21:37Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeo0wAQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-04T06:21:34Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeo0ulw",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-04T06:21:33Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABlrYOqw",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-03T04:57:11Z",
+            "updatedAt": "2026-10-03T05:00:47Z",
+            "commitOid": "ac7fffe6cf8474a258b2f64c96604137cfbbb37e",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-03T05:00:47Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeKfRqA",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-03T05:00:47Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeKbNnA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-03T04:57:15Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeKbJ4g",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-03T04:57:13Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeKbI1A",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-03T04:57:12Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABlleDvw",
+            "environment": "release",
+            "task": "deploy",
+            "createdAt": "2026-10-02T20:12:16Z",
+            "updatedAt": "2026-10-02T21:40:46Z",
+            "commitOid": "ff22743ac9b00f19f7416d6b2cf4be19b0fa37ea",
+            "ref": {
+              "name": "1.65.0"
+            },
+            "creator": {
+              "login": "sfc-gh-nbellante"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-02T21:40:46Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEeAF78A",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-02T21:40:46Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEd_-S0w",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-02T21:37:17Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEd_-JtQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-02T21:37:13Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEd80R-A",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-02T20:12:17Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEd80R2Q",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-02T20:12:17Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABlWgf_Q",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-10-02T04:55:36Z",
+            "updatedAt": "2026-10-02T04:59:13Z",
+            "commitOid": "0db4d54bbadd06a95134a0e593aac25065ebaa87",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-10-02T04:59:13Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEdam-Kg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-10-02T04:59:13Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEdahmqA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-10-02T04:55:40Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEdahjTg",
+                  "state": "QUEUED",
+                  "createdAt": "2026-10-02T04:55:38Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEdahh3g",
+                  "state": "WAITING",
+                  "createdAt": "2026-10-02T04:55:37Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABjJw7Lg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-25T04:56:19Z",
+            "updatedAt": "2026-09-25T05:00:01Z",
+            "commitOid": "d2cabf5c4d5d255b08058224e56c718a8378176c",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-25T05:00:01Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEYbL2Hg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-25T05:00:01Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEYbGucg",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-25T04:56:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEYbGpfA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-25T04:56:20Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEYbGoMg",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-25T04:56:20Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABizUvaQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-24T04:53:13Z",
+            "updatedAt": "2026-09-24T04:57:07Z",
+            "commitOid": "5d3346814a337a1118ea6059fd50c06366fa63cb",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-24T04:57:07Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEXoJ9GA",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-24T04:57:07Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEXoDw9g",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-24T04:53:18Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEXoDskA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-24T04:53:15Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEXoDrOw",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-24T04:53:14Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABicmC2g",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-23T04:53:14Z",
+            "updatedAt": "2026-09-23T04:56:26Z",
+            "commitOid": "5a33c1f6ec767f92a1b0ffa2873d9d9967a44445",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-23T04:56:26Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEW0dT4g",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-23T04:56:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEW0YacA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-23T04:53:18Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEW0YWUA",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-23T04:53:16Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEW0YVBw",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-23T04:53:15Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABiGrJtA",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-22T04:53:11Z",
+            "updatedAt": "2026-09-22T04:57:24Z",
+            "commitOid": "022ddda058d2ce2a7a4fdd7970712f934df0a182",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-22T04:57:24Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEWCZgaw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-22T04:57:24Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEWCTb2w",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-22T04:53:16Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEWCTVhw",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-22T04:53:13Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEWCTUFA",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-22T04:53:12Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABhx7Y4A",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-21T04:56:45Z",
+            "updatedAt": "2026-09-21T05:00:36Z",
+            "commitOid": "6e679bd3da78468632d157bab9773596dd0fcf06",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-21T05:00:36Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEVTLTpw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-21T05:00:36Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEVTGd8A",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-21T04:56:50Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEVTGZyQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-21T04:56:47Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEVTGYig",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-21T04:56:46Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABhlyipQ",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-20T04:53:06Z",
+            "updatedAt": "2026-09-20T04:56:22Z",
+            "commitOid": "a807ca5f8274de0eb708729cb40266f6321b82cc",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-20T04:56:22Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEU358bw",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-20T04:56:22Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEU3282g",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-20T04:53:10Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEU3254g",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-20T04:53:07Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEU325Vg",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-20T04:53:07Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABhaaNfg",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-19T04:51:39Z",
+            "updatedAt": "2026-09-19T04:55:16Z",
+            "commitOid": "a807ca5f8274de0eb708729cb40266f6321b82cc",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-19T04:55:16Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEUeNApQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-19T04:55:16Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEUeJncA",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-19T04:51:44Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEUeJkMg",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-19T04:51:41Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAEUeJjfw",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-19T04:51:40Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABhH3hPw",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-18T04:53:21Z",
+            "updatedAt": "2026-09-18T04:56:19Z",
+            "commitOid": "0207b72d783b60deb8f9ef4efc78d79654e83234",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-18T04:56:19Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETzTflg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-18T04:56:19Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETzPQ2w",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-18T04:53:26Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETzPMwQ",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-18T04:53:23Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETzPLgw",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-18T04:53:22Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABgy9l8w",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-17T04:54:48Z",
+            "updatedAt": "2026-09-17T04:58:56Z",
+            "commitOid": "6636d9c99b42227b1518d73f7d248e581d048a8e",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-17T04:58:56Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETDExMg",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-17T04:58:56Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETC_A0g",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-17T04:54:53Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETC-8Vw",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-17T04:54:50Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAETC-6vw",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-17T04:54:49Z"
+                }
+              ]
+            }
+          },
+          {
+            "id": "DE_kwDODCoeTs8AAAABgeKY-g",
+            "environment": "nightly",
+            "task": "deploy",
+            "createdAt": "2026-09-16T04:57:04Z",
+            "updatedAt": "2026-09-16T05:01:21Z",
+            "commitOid": "69dd6ab2e8942ff18614c25e8244dfacd840bda2",
+            "ref": {
+              "name": "develop"
+            },
+            "creator": {
+              "login": "kmcgrady"
+            },
+            "latestStatus": {
+              "state": "SUCCESS",
+              "createdAt": "2026-09-16T05:01:21Z"
+            },
+            "statuses": {
+              "nodes": [
+                {
+                  "id": "DES_kwDODCoeTs8AAAAESTM4zQ",
+                  "state": "SUCCESS",
+                  "createdAt": "2026-09-16T05:01:21Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAESTGtKw",
+                  "state": "IN_PROGRESS",
+                  "createdAt": "2026-09-16T04:57:10Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAESTGm4w",
+                  "state": "QUEUED",
+                  "createdAt": "2026-09-16T04:57:06Z"
+                },
+                {
+                  "id": "DES_kwDODCoeTs8AAAAESTGl3A",
+                  "state": "WAITING",
+                  "createdAt": "2026-09-16T04:57:05Z"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

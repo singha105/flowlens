@@ -3,7 +3,7 @@
     "rateLimit": {
       "limit": 5000,
       "cost": 1,
-      "remaining": 4988,
+      "remaining": 4729,
       "resetAt": "2026-10-29T05:37:01Z"
     },
     "repository": {
@@ -14,6 +14,7 @@
         },
         "nodes": [
           {
+            "id": "PR_kwDOAAs0JM6rHHay",
             "number": 510,
             "title": "Don't run pytest-run-parallel twice",
             "url": "https://github.com/pallets/markupsafe/pull/510",
@@ -26,6 +27,7 @@
             "additions": 1,
             "deletions": 1,
             "baseRefName": "stable",
+            "mergeCommit": null,
             "author": {
               "login": "crusaderky",
               "__typename": "User"
@@ -43,11 +45,19 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           },
           {
+            "id": "PR_kwDOAAs0JM7CcpF1",
             "number": 514,
             "title": "Build armv7l wheels",
             "url": "https://github.com/pallets/markupsafe/pull/514",
@@ -60,6 +70,9 @@
             "additions": 3,
             "deletions": 2,
             "baseRefName": "stable",
+            "mergeCommit": {
+              "oid": "3e0775809b92150b10d1671ce1821ea6eb56be0c"
+            },
             "author": {
               "login": "Lauszus",
               "__typename": "User"
@@ -77,11 +90,19 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           },
           {
+            "id": "PR_kwDOAAs0JM7EFM5H",
             "number": 518,
             "title": "Build ppc64le wheels",
             "url": "https://github.com/pallets/markupsafe/pull/518",
@@ -94,6 +115,9 @@
             "additions": 7,
             "deletions": 3,
             "baseRefName": "stable",
+            "mergeCommit": {
+              "oid": "bc33c55cb3078ba9f9b0950babb32f8d842f1267"
+            },
             "author": {
               "login": "PankhudiJ17",
               "__typename": "User"
@@ -111,11 +135,19 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": []
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           },
           {
+            "id": "PR_kwDOAAs0JM7D1D6r",
             "number": 516,
             "title": "Build Android and iOS wheels",
             "url": "https://github.com/pallets/markupsafe/pull/516",
@@ -128,6 +160,9 @@
             "additions": 24,
             "deletions": 3,
             "baseRefName": "stable",
+            "mergeCommit": {
+              "oid": "ff1eaff921f92db57327752bbc37472d37fb9b21"
+            },
             "author": {
               "login": "timrid",
               "__typename": "User"
@@ -145,7 +180,21 @@
                 }
               ]
             },
+            "closingIssuesReferences": {
+              "nodes": [
+                {
+                  "number": 515,
+                  "repository": {
+                    "nameWithOwner": "pallets/markupsafe"
+                  }
+                }
+              ]
+            },
             "reviews": {
+              "pageInfo": {
+                "hasNextPage": false,
+                "endCursor": null
+              },
               "nodes": []
             }
           }

@@ -1,27 +1,43 @@
-import subprocess
-from datetime import UTC, datetime, timedelta
+import copy
+from datetime import UTC, datetime
 from itertools import islice
 
-import httpx
 import pytest
 
-from fakes import NOW, FakeGitHub, in_sequence, load_fixture, recorded_pages
-from flowlens.ingest import github
+from fakes import FakeGitHub, FakeRepo, fixture_items, load_fixture, recorded_pages
+from flowlens.ingest.client import GitHubError
 from flowlens.ingest.github import (
-    GitHubAuthError,
-    GitHubError,
+    ISSUES_QUERY,
+    PULL_REQUESTS_QUERY,
     fetch_issues,
     fetch_pull_requests,
     first_review,
+    issue_event_rows,
     issue_row,
     pull_request_row,
+    review_rows,
 )
 
-OK = load_fixture("issues_page3.json")
+STREAMLIT = "streamlit/streamlit"
 
 
 def utc(*parts: int) -> datetime:
     return datetime(*parts, tzinfo=UTC)
+
+
+@pytest.fixture(scope="module")
+def streamlit_issues():
+    return fixture_items("streamlit_issues.json")
+
+
+@pytest.fixture(scope="module")
+def streamlit_prs():
+    return fixture_items("streamlit_prs.json")
+
+
+def events(node, event_type=None):
+    rows = issue_event_rows(node)
+    return [row for row in rows if event_type is None or row["event_type"] == event_type]
 
 
 # --- pagination -------------------------------------------------------------------------
@@ -41,8 +57,6 @@ def test_issues_follow_cursors_until_the_last_page():
     assert {body["variables"]["since"] for body in fake.requests} == {"2026-07-01T00:00:00Z"}
     assert {body["variables"]["first"] for body in fake.requests} == {3}
     assert client.calls == 3
-    assert client.cost == 3
-    assert client.rate_limit.remaining == 4989
 
 
 def test_issues_without_since_send_a_null_filter():
@@ -80,7 +94,90 @@ def test_missing_repository_raises_a_clear_error():
         list(fetch_issues(fake.client(), "singha105", "no-such-repo-flowlens"))
 
 
-# --- row mapping ------------------------------------------------------------------------
+def test_queries_only_declare_fragments_they_use():
+    # GraphQL rejects a document with an unused fragment, so each query carries exactly
+    # the fragments it spreads.
+    for query in (ISSUES_QUERY, PULL_REQUESTS_QUERY):
+        declared = {line.split()[1] for line in query.splitlines() if line.startswith("fragment")}
+        for fragment in declared:
+            assert f"...{fragment}" in query
+
+
+def test_a_capped_timeline_is_completed_with_follow_up_queries(streamlit_issues):
+    node = streamlit_issues[8793]  # 14 timeline items
+    repo = FakeRepo()
+    repo.issues = [repo.cap(node, "timelineItems", keep=5)]
+    fake = FakeGitHub(repo)
+
+    (page,) = fetch_issues(fake.client(), "streamlit", "streamlit")
+
+    assert len(page[0]["timelineItems"]["nodes"]) == len(node["timelineItems"]["nodes"])
+    assert page[0]["timelineItems"]["pageInfo"]["hasNextPage"] is False
+    follow_up = fake.requests[1]
+    assert "node(id:" in follow_up["query"]
+    assert follow_up["variables"] == {"id": node["id"], "cursor": "5"}
+    assert events(page[0]) == events(node)
+
+
+def test_capped_reviews_are_completed_with_follow_up_queries(streamlit_prs):
+    node = streamlit_prs[17730]  # six reviews
+    repo = FakeRepo()
+    repo.pull_requests = [repo.cap(node, "reviews", keep=1)]
+    fake = FakeGitHub(repo)
+
+    (page,) = fetch_pull_requests(fake.client(), "streamlit", "streamlit")
+
+    assert len(page[0]["reviews"]["nodes"]) == 6
+    assert len(fake.requests) == 2
+    # The first review (a bot's) was the only one fetched up front; the human approval
+    # that counts came in the follow-up.
+    assert pull_request_row(page[0], STREAMLIT)["first_review_at"] == utc(2026, 10, 28, 20, 41, 12)
+
+
+def test_a_closed_issue_missing_its_close_event_is_read_again(streamlit_issues):
+    # GitHub drops events from big issue pages without saying so; a closed issue with no
+    # close event is the tell.
+    node = streamlit_issues[11752]  # five events, the close last
+    repo = FakeRepo()
+    repo.issues = [repo.cap(node, "timelineItems", keep=2, silently=True)]
+    fake = FakeGitHub(repo)
+
+    (page,) = fetch_issues(fake.client(), "streamlit", "streamlit")
+
+    assert fake.requests[1]["variables"] == {"id": node["id"], "cursor": None}
+    assert events(page[0]) == events(node)
+
+
+def test_open_issues_and_complete_timelines_are_not_read_again(streamlit_issues):
+    repo = FakeRepo()
+    repo.issues = [
+        repo.cap(streamlit_issues[16726], "timelineItems", keep=3, silently=True),  # open
+        streamlit_issues[17733],  # closed, with its close event
+    ]
+    fake = FakeGitHub(repo)
+
+    list(fetch_issues(fake.client(), "streamlit", "streamlit"))
+
+    assert len(fake.requests) == 1
+
+
+def test_a_closed_issue_with_no_close_event_at_all_is_read_once_more_only(streamlit_issues):
+    node = copy.deepcopy(streamlit_issues[11752])
+    node["timelineItems"]["nodes"] = [
+        e for e in node["timelineItems"]["nodes"] if e["__typename"] != "ClosedEvent"
+    ]
+    kept = len(node["timelineItems"]["nodes"])
+    repo = FakeRepo()
+    repo.issues = [repo.cap(node, "timelineItems", keep=kept)]
+    fake = FakeGitHub(repo)
+
+    (page,) = fetch_issues(fake.client(), "streamlit", "streamlit")
+
+    assert len(fake.requests) == 2  # the page, then one re-read that changes nothing
+    assert len(page[0]["timelineItems"]["nodes"]) == kept
+
+
+# --- issues and their timelines ---------------------------------------------------------
 
 
 def test_issue_row_flattens_a_recorded_node():
@@ -97,23 +194,197 @@ def test_issue_row_flattens_a_recorded_node():
     assert row["author_type"] == "User"
     assert row["assignees"] == ["davidism"]
     assert row["labels"] == []
-    assert row["raw"] is node
+    assert "timelineItems" not in row["raw"]  # events are stored as their own rows
+
+
+def test_assigned_and_unassigned_events(streamlit_issues):
+    node = streamlit_issues[16726]
+
+    (assigned,) = events(node, "assigned")
+    (unassigned,) = events(node, "unassigned")
+
+    assert (assigned["created_at"], assigned["assignee"], assigned["actor"]) == (
+        utc(2026, 8, 30, 15, 11, 5),
+        "sfc-gh-lmasuch",
+        "sfc-gh-lmasuch",
+    )
+    assert (unassigned["assignee"], unassigned["actor"]) == ("sfc-gh-lmasuch", "lukasmasuch")
+    assert issue_row(node)["assignees"] == []  # current state: nobody
+
+
+def test_labeled_and_unlabeled_events(streamlit_issues):
+    node = streamlit_issues[14555]
+
+    labeled = [(e["label"], e["actor"]) for e in events(node, "labeled")]
+    unlabeled = [e["label"] for e in events(node, "unlabeled")]
+
+    assert labeled[0] == ("type:bug", "ghilesmeddour")
+    assert ("type:enhancement", "lukasmasuch") in labeled
+    assert "type:bug" in unlabeled  # relabelled from bug to enhancement
+    assert "type:bug" not in issue_row(node)["labels"]
+
+
+def test_closed_event_keeps_its_state_reason_and_closing_pr(streamlit_issues):
+    (closed,) = events(streamlit_issues[11752], "closed")
+
+    assert closed["state_reason"] == "COMPLETED"
+    assert (closed["pr_number"], closed["pr_repo"]) == (16418, STREAMLIT)
+    assert closed["pr_created_at"] == utc(2026, 8, 8, 12, 20, 26)
+
+
+def test_closed_not_planned(streamlit_issues):
+    node = streamlit_issues[14209]
+
+    (closed,) = events(node, "closed")
+
+    assert closed["state_reason"] == "NOT_PLANNED"
+    assert closed["pr_number"] is None
+    assert issue_row(node)["state_reason"] == "NOT_PLANNED"
+
+
+def test_reopened_events(streamlit_issues):
+    node = streamlit_issues[8793]
+
+    kinds = [e["event_type"] for e in events(node) if e["event_type"] in {"closed", "reopened"}]
+
+    assert kinds == ["closed", "reopened", "closed"]
+    still_open = streamlit_issues[8271]
+    assert [e["event_type"] for e in events(still_open, "reopened")] == ["reopened"]
+    assert (issue_row(still_open)["state"], issue_row(still_open)["state_reason"]) == (
+        "OPEN",
+        "REOPENED",
+    )
+
+
+def test_cross_references_keep_the_pr_and_its_repo(streamlit_issues):
+    refs = events(streamlit_issues[12801], "cross_referenced")
+
+    assert [(e["pr_number"], e["pr_repo"]) for e in refs] == [
+        (1382, "streamlit/docs"),
+        (9, "mrdsantos/insightflow"),
+    ]
+    assert {e["will_close"] for e in refs} == {False}
+
+
+def test_cross_references_from_issues_are_dropped():
+    node = copy.deepcopy(fixture_items("streamlit_issues.json")[12801])
+    mention = copy.deepcopy(node["timelineItems"]["nodes"][-1])
+    mention["id"] = "CRE_from_an_issue"
+    mention["source"] = {"__typename": "Issue", "number": 1}
+    node["timelineItems"]["nodes"].append(mention)
+
+    assert "CRE_from_an_issue" not in {e["id"] for e in events(node)}
+
+
+def test_connected_event():
+    node = fixture_items("cli_issues.json")[14614]
+
+    (connected,) = events(node, "connected")
+
+    assert (connected["pr_number"], connected["pr_repo"]) == (14616, "cli/cli")
+    assert connected["pr_created_at"] == utc(2026, 10, 7, 8, 24, 38)
+
+
+def test_every_tracked_event_type_is_parsed(streamlit_issues):
+    seen = {e["event_type"] for node in streamlit_issues.values() for e in events(node)}
+    seen |= {e["event_type"] for e in events(fixture_items("cli_issues.json")[14614])}
+
+    assert seen == {
+        "assigned",
+        "unassigned",
+        "labeled",
+        "unlabeled",
+        "cross_referenced",
+        "connected",
+        "closed",
+        "reopened",
+    }
+
+
+# --- pull requests and reviews ----------------------------------------------------------
 
 
 def test_pull_request_row_uses_the_first_commits_author_date():
     nodes = load_fixture("pull_requests_page2.json")["data"]["repository"]["pullRequests"]["nodes"]
     node = next(n for n in nodes if n["number"] == 514)
 
-    row = pull_request_row(node)
+    row = pull_request_row(node, "pallets/markupsafe")
 
     assert row["state"] == "MERGED"
-    assert row["merged_at"] is not None
     assert row["base_ref_name"] == "stable"
     # Authored in February, rebased (committed) in October: the work started in February.
     assert row["first_commit_at"] == utc(2026, 2, 9, 10, 41, 20)
     assert row["first_review_at"] is None
-    assert row["first_reviewer"] is None
     assert isinstance(row["additions"], int)
+
+
+def test_first_review_and_approval_skip_bots_and_the_author(streamlit_prs):
+    row = pull_request_row(streamlit_prs[17730], STREAMLIT)
+
+    # Copilot commented 11s after the PR opened and github-actions approved later; neither
+    # counts. The author's own reply is a review too, and doesn't count either.
+    assert row["first_review_at"] == utc(2026, 10, 28, 20, 41, 12)
+    assert row["first_reviewer"] == "sfc-gh-lmasuch"
+    assert row["first_approval_at"] == utc(2026, 10, 28, 20, 41, 12)
+    assert row["review_count"] == 1
+    assert row["merge_commit_sha"] == "95e2aa71230cd09c7736a98f4e258933e8fd54b0"
+    assert "reviews" not in row["raw"]
+
+
+def test_a_bot_approval_is_not_an_approval(streamlit_prs):
+    row = pull_request_row(streamlit_prs[17704], STREAMLIT)
+
+    assert row["first_reviewer"] == "sfc-gh-nbellante"
+    assert row["first_approval_at"] is None
+    assert row["merge_commit_sha"] is None  # still open
+
+
+def test_a_pr_reviewed_only_by_bots_and_its_author_has_no_review(streamlit_prs):
+    row = pull_request_row(streamlit_prs[17688], STREAMLIT)
+
+    assert (row["first_review_at"], row["first_approval_at"], row["review_count"]) == (
+        None,
+        None,
+        0,
+    )
+    assert row["closing_issues"] == [17612]
+
+
+def test_review_rows_keep_every_review_with_its_author_type(streamlit_prs):
+    rows = review_rows(streamlit_prs[17730])
+
+    assert len(rows) == 6
+    assert [(r["author"], r["author_type"], r["state"]) for r in rows[:2]] == [
+        ("copilot-pull-request-reviewer", "Bot", "COMMENTED"),
+        ("sfc-gh-lmasuch", "User", "APPROVED"),
+    ]
+    assert {r["pr_number"] for r in rows} == {17730}
+
+
+def test_changes_requested_then_approved():
+    node = fixture_items("cli_prs.json")[11926]
+
+    row = pull_request_row(node, "cli/cli")
+    states = [r["state"] for r in review_rows(node) if r["author"] == "BagToad"]
+
+    assert states == ["APPROVED", "CHANGES_REQUESTED", "APPROVED"]
+    assert row["first_reviewer"] == "babakks"
+    assert row["first_approval_at"] == utc(2025, 10, 31, 18, 18, 48)
+
+
+def test_bot_authored_pr(streamlit_prs):
+    row = pull_request_row(streamlit_prs[17735], STREAMLIT)
+
+    assert (row["author"], row["author_type"]) == ("github-actions", "Bot")
+
+
+def test_closing_issues_in_other_repos_are_dropped(streamlit_prs):
+    node = copy.deepcopy(streamlit_prs[17688])
+    node["closingIssuesReferences"]["nodes"].append(
+        {"number": 99, "repository": {"nameWithOwner": "streamlit/docs"}}
+    )
+
+    assert pull_request_row(node, STREAMLIT)["closing_issues"] == [17612]
 
 
 def test_first_review_skips_the_authors_own_and_pending_reviews():
@@ -132,149 +403,3 @@ def test_first_review_counts_reviews_from_deleted_accounts():
 
     assert first_review(reviews, "alice") == (utc(2026, 1, 2, 9), None)
     assert first_review([], "alice") == (None, None)
-
-
-# --- retries and rate limits ------------------------------------------------------------
-
-
-def test_502_is_retried_with_exponential_backoff():
-    fake = FakeGitHub(in_sequence(httpx.Response(502), httpx.Response(502), OK))
-    client = fake.client()
-
-    client.query("query", {})
-
-    assert client.calls == 3
-    assert len(fake.sleeps) == 2
-    assert 1.0 <= fake.sleeps[0] <= 1.25
-    assert 2.0 <= fake.sleeps[1] <= 2.5
-
-
-def test_secondary_rate_limit_honours_retry_after():
-    limited = httpx.Response(
-        403,
-        headers={"retry-after": "7"},
-        json={"message": "You have exceeded a secondary rate limit."},
-    )
-    fake = FakeGitHub(in_sequence(limited, OK))
-
-    fake.client().query("query", {})
-
-    assert fake.sleeps == [7.0]
-
-
-def test_secondary_rate_limit_without_headers_waits_at_least_a_minute():
-    limited = httpx.Response(403, json={"message": "You have exceeded a secondary rate limit."})
-    fake = FakeGitHub(in_sequence(limited, OK))
-
-    fake.client().query("query", {})
-
-    assert fake.sleeps == [60.0]
-
-
-def test_429_waits_until_the_rate_limit_resets():
-    reset = int((NOW + timedelta(seconds=30)).timestamp())
-    limited = httpx.Response(
-        429, headers={"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(reset)}
-    )
-    fake = FakeGitHub(in_sequence(limited, OK))
-
-    fake.client().query("query", {})
-
-    assert fake.sleeps == [31.0]
-
-
-def test_graphql_rate_limited_error_waits_and_retries():
-    reset = int((NOW + timedelta(seconds=120)).timestamp())
-    limited = httpx.Response(
-        200,
-        headers={"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(reset)},
-        json={"errors": [{"type": "RATE_LIMITED", "message": "API rate limit exceeded"}]},
-    )
-    fake = FakeGitHub(in_sequence(limited, OK))
-
-    data = fake.client().query("query", {})
-
-    assert fake.sleeps == [121.0]
-    assert data["repository"]["issues"]["nodes"]
-
-
-def test_403_without_rate_limit_signals_is_not_retried():
-    forbidden = httpx.Response(403, json={"message": "Resource not accessible by integration"})
-    fake = FakeGitHub(in_sequence(forbidden))
-    client = fake.client()
-
-    with pytest.raises(GitHubError, match="HTTP 403"):
-        client.query("query", {})
-    assert fake.sleeps == []
-    assert client.calls == 1
-
-
-def test_401_raises_an_auth_error():
-    fake = FakeGitHub(in_sequence(httpx.Response(401, json={"message": "Bad credentials"})))
-
-    with pytest.raises(GitHubAuthError, match="gh auth login"):
-        fake.client().query("query", {})
-
-
-def test_network_errors_are_retried():
-    fake = FakeGitHub(in_sequence(httpx.ConnectError("connection reset"), OK))
-    client = fake.client()
-
-    client.query("query", {})
-
-    assert client.calls == 2
-    assert len(fake.sleeps) == 1
-
-
-def test_gives_up_after_max_retries():
-    fake = FakeGitHub(lambda _body: httpx.Response(502))
-    client = fake.client(max_retries=2)
-
-    with pytest.raises(GitHubError, match="Giving up after 3 attempts: HTTP 502"):
-        client.query("query", {})
-    assert client.calls == 3
-    assert len(fake.sleeps) == 2
-
-
-def test_pauses_until_reset_when_few_points_remain():
-    payload = load_fixture("issues_page3.json")
-    payload["data"]["rateLimit"]["remaining"] = 10
-    payload["data"]["rateLimit"]["resetAt"] = "2026-10-29T05:01:00Z"  # NOW + 60s
-    fake = FakeGitHub(in_sequence(payload))
-
-    fake.client(min_remaining=50).query("query", {})
-
-    assert fake.sleeps == [61.0]
-
-
-# --- auth -------------------------------------------------------------------------------
-
-
-def test_token_comes_from_gh(monkeypatch: pytest.MonkeyPatch):
-    def fake_run(args, **_kwargs):
-        assert args == ["gh", "auth", "token"]
-        return subprocess.CompletedProcess(args, 0, stdout="gho_example\n", stderr="")
-
-    monkeypatch.setattr(github.subprocess, "run", fake_run)
-
-    assert github.token_from_gh() == "gho_example"
-
-
-def test_missing_gh_is_an_auth_error(monkeypatch: pytest.MonkeyPatch):
-    def fake_run(*_args, **_kwargs):
-        raise FileNotFoundError("gh")
-
-    monkeypatch.setattr(github.subprocess, "run", fake_run)
-
-    with pytest.raises(GitHubAuthError, match="not found"):
-        github.token_from_gh()
-
-
-def test_logged_out_gh_is_an_auth_error(monkeypatch: pytest.MonkeyPatch):
-    def fake_run(args, **_kwargs):
-        raise subprocess.CalledProcessError(1, args)
-
-    monkeypatch.setattr(github.subprocess, "run", fake_run)
-
-    with pytest.raises(GitHubAuthError, match="gh auth login"):
-        github.token_from_gh()

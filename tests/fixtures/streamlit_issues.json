@@ -1,0 +1,1513 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4937,
+      "resetAt": "2026-10-29T05:47:49Z"
+    },
+    "repository": {
+      "i17733": {
+        "id": "I_kwDODCoeTs8AAAABaufLlg",
+        "number": 17733,
+        "title": "BUG Report st.toast",
+        "url": "https://github.com/streamlit/streamlit/issues/17733",
+        "state": "CLOSED",
+        "stateReason": "COMPLETED",
+        "createdAt": "2026-10-28T22:19:32Z",
+        "updatedAt": "2026-10-29T01:08:10Z",
+        "closedAt": "2026-10-29T01:08:10Z",
+        "author": {
+          "login": "dagunix",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:bug"
+            },
+            {
+              "name": "type:regression"
+            },
+            {
+              "name": "area:frontend"
+            },
+            {
+              "name": "status:needs-triage"
+            },
+            {
+              "name": "feature:st.toast"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoYUzPJABqzM0NTM2NzcwMzI5"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaufLls8AAAAICe1Cjw",
+              "createdAt": "2026-10-28T22:19:33Z",
+              "actor": {
+                "login": "dagunix"
+              },
+              "label": {
+                "name": "type:bug"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaufLls8AAAAICe1Dxw",
+              "createdAt": "2026-10-28T22:19:33Z",
+              "actor": {
+                "login": "dagunix"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaufLls8AAAAICopBeQ",
+              "createdAt": "2026-10-29T01:04:44Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs8AAAABaufLls8AAAAICouBfA",
+              "createdAt": "2026-10-29T01:06:11Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaufLls8AAAAICouPwg",
+              "createdAt": "2026-10-29T01:06:15Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "type:regression"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaufLls8AAAAICouW_g",
+              "createdAt": "2026-10-29T01:06:17Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:st.toast"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaufLls8AAAAICoud4w",
+              "createdAt": "2026-10-29T01:06:18Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "area:frontend"
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs8AAAABaufLls8AAAAICo1LGQ",
+              "createdAt": "2026-10-29T01:08:10Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "closer": null
+            }
+          ]
+        }
+      },
+      "i16726": {
+        "id": "I_kwDODCoeTs8AAAABO3aScg",
+        "number": 16726,
+        "title": "Modernize `st.chat_message` design to match modern agentic chat UIs",
+        "url": "https://github.com/streamlit/streamlit/issues/16726",
+        "state": "OPEN",
+        "stateReason": null,
+        "createdAt": "2026-08-30T14:31:57Z",
+        "updatedAt": "2026-09-09T10:47:51Z",
+        "closedAt": null,
+        "author": {
+          "login": "lukasmasuch",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:enhancement"
+            },
+            {
+              "name": "area:styling"
+            },
+            {
+              "name": "feature:theming"
+            },
+            {
+              "name": "feature:st.chat_message"
+            },
+            {
+              "name": "area:ai"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoFND_gABqzMwMjM5NDU1NjI0"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABO3aScs8AAAAHClh87Q",
+              "createdAt": "2026-08-30T14:31:59Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "type:enhancement"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABO3aScs8AAAAHClh9bQ",
+              "createdAt": "2026-08-30T14:31:59Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "area:styling"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABO3aScs8AAAAHClh9xw",
+              "createdAt": "2026-08-30T14:31:59Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "feature:st.chat_message"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABO3aScs8AAAAHCmWSoA",
+              "createdAt": "2026-08-30T15:11:05Z",
+              "actor": {
+                "login": "sfc-gh-lmasuch"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "AssignedEvent",
+              "id": "AE_lADODCoeTs8AAAABO3aScs8AAAAHCmWTDg",
+              "createdAt": "2026-08-30T15:11:05Z",
+              "actor": {
+                "login": "sfc-gh-lmasuch"
+              },
+              "assignee": {
+                "login": "sfc-gh-lmasuch"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs8AAAABO3aScs8AAAAHCmZlIA",
+              "createdAt": "2026-08-30T15:13:22Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABO3aScs8AAAAHCmZw5A",
+              "createdAt": "2026-08-30T15:13:30Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "area:ai"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABO3aScs8AAAAHCmZz7g",
+              "createdAt": "2026-08-30T15:13:32Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:theming"
+              }
+            },
+            {
+              "__typename": "UnassignedEvent",
+              "id": "UNE_lADODCoeTs8AAAABO3aScs8AAAAHCml5iA",
+              "createdAt": "2026-08-30T15:22:40Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "assignee": {
+                "login": "sfc-gh-lmasuch"
+              }
+            }
+          ]
+        }
+      },
+      "i11752": {
+        "id": "I_kwDODCoeTs69H6lP",
+        "number": 11752,
+        "title": "Add icon to st.header and st.subheader (and st.markdown?)",
+        "url": "https://github.com/streamlit/streamlit/issues/11752",
+        "state": "CLOSED",
+        "stateReason": "COMPLETED",
+        "createdAt": "2025-06-24T18:51:26Z",
+        "updatedAt": "2026-08-28T19:51:49Z",
+        "closedAt": "2026-08-28T19:51:49Z",
+        "author": {
+          "login": "arnaudmiribel",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:enhancement"
+            },
+            {
+              "name": "feature:markdown"
+            },
+            {
+              "name": "feature:st.header"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoEntsAgBqzMwMTg1MDEwNTEy"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs69H6lPzwAAAARCzr8R",
+              "createdAt": "2025-06-24T18:51:27Z",
+              "actor": {
+                "login": "arnaudmiribel"
+              },
+              "label": {
+                "name": "type:enhancement"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs69H6lPzwAAAARC1I0C",
+              "createdAt": "2025-06-24T19:19:20Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "feature:st.header"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs69H6lPzwAAAARC1JCs",
+              "createdAt": "2025-06-24T19:19:24Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "feature:markdown"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAABj25kNg",
+              "createdAt": "2026-05-18T16:07:16Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "github-actions"
+              },
+              "source": {
+                "__typename": "Issue"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAACNP6tfA",
+              "createdAt": "2026-08-08T12:20:27Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 16418,
+                "createdAt": "2026-08-08T12:20:26Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs69H6lPzwAAAAcHKrVQ",
+              "createdAt": "2026-08-28T19:51:49Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "closer": {
+                "__typename": "PullRequest",
+                "number": 16418,
+                "createdAt": "2026-08-08T12:20:26Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "i17665": {
+        "id": "I_kwDODCoeTs8AAAABaCtrkQ",
+        "number": 17665,
+        "title": "`st.plotly_chart(theme=None)` still applies the active theme's font color: invisible texts on light figures in dark mode",
+        "url": "https://github.com/streamlit/streamlit/issues/17665",
+        "state": "CLOSED",
+        "stateReason": "COMPLETED",
+        "createdAt": "2026-10-26T15:20:14Z",
+        "updatedAt": "2026-10-27T02:11:45Z",
+        "closedAt": "2026-10-27T02:11:45Z",
+        "author": {
+          "login": "ArnaudPel",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:bug"
+            },
+            {
+              "name": "area:frontend"
+            },
+            {
+              "name": "status:confirmed"
+            },
+            {
+              "name": "priority:P2"
+            },
+            {
+              "name": "feature:st.plotly_chart"
+            },
+            {
+              "name": "feature:theming"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": [
+            {
+              "login": "mayagbarnes"
+            }
+          ]
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoXsguugBqzM0MzIzNzA2Njc2"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH-ujnIQ",
+              "createdAt": "2026-10-26T15:20:16Z",
+              "actor": {
+                "login": "ArnaudPel"
+              },
+              "label": {
+                "name": "type:bug"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH-ujo2A",
+              "createdAt": "2026-10-26T15:20:17Z",
+              "actor": {
+                "login": "ArnaudPel"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH-yKcKA",
+              "createdAt": "2026-10-26T15:57:43Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs8AAAABaCtrkc8AAAAH-yb3Mg",
+              "createdAt": "2026-10-26T16:00:30Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH-ycejg",
+              "createdAt": "2026-10-26T16:00:36Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:st.plotly_chart"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH-yc11w",
+              "createdAt": "2026-10-26T16:00:40Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:theming"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH-ydItw",
+              "createdAt": "2026-10-26T16:00:43Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "area:frontend"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs8AAAABaCtrkc8AAAAH--eQ3Q",
+              "createdAt": "2026-10-26T18:18:19Z",
+              "actor": {
+                "login": "mayagbarnes"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH--eRTA",
+              "createdAt": "2026-10-26T18:18:19Z",
+              "actor": {
+                "login": "mayagbarnes"
+              },
+              "label": {
+                "name": "status:confirmed"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs8AAAABaCtrkc8AAAAH--eRkQ",
+              "createdAt": "2026-10-26T18:18:19Z",
+              "actor": {
+                "login": "mayagbarnes"
+              },
+              "label": {
+                "name": "priority:P2"
+              }
+            },
+            {
+              "__typename": "AssignedEvent",
+              "id": "AE_lADODCoeTs8AAAABaCtrkc8AAAAH--u9tg",
+              "createdAt": "2026-10-26T18:21:35Z",
+              "actor": {
+                "login": "mayagbarnes"
+              },
+              "assignee": {
+                "login": "mayagbarnes"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAAEL3C8Ag",
+              "createdAt": "2026-10-26T19:07:43Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "mayagbarnes"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 17671,
+                "createdAt": "2026-10-26T19:07:42Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs8AAAABaCtrkc8AAAAH_dozNA",
+              "createdAt": "2026-10-27T02:11:45Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "mayagbarnes"
+              },
+              "closer": {
+                "__typename": "PullRequest",
+                "number": 17671,
+                "createdAt": "2026-10-26T19:07:42Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "i12801": {
+        "id": "I_kwDODCoeTs7SSKEF",
+        "number": 12801,
+        "title": "Improve text color on top of light primary colors",
+        "url": "https://github.com/streamlit/streamlit/issues/12801",
+        "state": "OPEN",
+        "stateReason": null,
+        "createdAt": "2025-10-18T02:31:55Z",
+        "updatedAt": "2026-08-22T10:38:08Z",
+        "closedAt": null,
+        "author": {
+          "login": "jrieke",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:enhancement"
+            },
+            {
+              "name": "feature:theming"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABn78O-5ACqjkxMzQyMjkyODQ="
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7SSKEFzwAAAAS9RL9_",
+              "createdAt": "2025-10-18T02:31:56Z",
+              "actor": {
+                "login": "jrieke"
+              },
+              "label": {
+                "name": "type:enhancement"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7SSKEFzwAAAAS9RMbE",
+              "createdAt": "2025-10-18T02:32:26Z",
+              "actor": {
+                "login": "jrieke"
+              },
+              "label": {
+                "name": "feature:theming"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDOFkWFOM7yajrn",
+              "createdAt": "2025-12-05T22:55:46Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "sfc-gh-dmatthews"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 1382,
+                "createdAt": "2025-12-04T23:39:24Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/docs"
+                }
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDOTpxle88AAAACIHFHJA",
+              "createdAt": "2026-08-01T20:40:58Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "coderabbitai"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 9,
+                "createdAt": "2026-08-01T20:33:51Z",
+                "repository": {
+                  "nameWithOwner": "mrdsantos/insightflow"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "i8793": {
+        "id": "I_kwDODCoeTs6KhNC7",
+        "number": 8793,
+        "title": "Anchor does not change on rerun()",
+        "url": "https://github.com/streamlit/streamlit/issues/8793",
+        "state": "CLOSED",
+        "stateReason": "COMPLETED",
+        "createdAt": "2024-05-29T18:18:24Z",
+        "updatedAt": "2026-08-03T16:03:49Z",
+        "closedAt": "2026-08-03T16:03:49Z",
+        "author": {
+          "login": "esnible",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:bug"
+            },
+            {
+              "name": "feature:markdown"
+            },
+            {
+              "name": "status:confirmed"
+            },
+            {
+              "name": "priority:P3"
+            },
+            {
+              "name": "feature:st.header"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABn8hd-nABqzI4ODk5MDQ4NDY5"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAMFaK0h",
+              "createdAt": "2024-05-29T18:18:24Z",
+              "actor": {
+                "login": "esnible"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAMFaK0p",
+              "createdAt": "2024-05-29T18:18:24Z",
+              "actor": {
+                "login": "esnible"
+              },
+              "label": {
+                "name": "type:bug"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs6KhNC7zwAAAAMFbFY7",
+              "createdAt": "2024-05-29T18:40:22Z",
+              "actor": {
+                "login": "kmcgrady"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAMFbFZB",
+              "createdAt": "2024-05-29T18:40:22Z",
+              "actor": {
+                "login": "kmcgrady"
+              },
+              "label": {
+                "name": "status:awaiting-user-response"
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs6KhNC7zwAAAAMIWh5b",
+              "createdAt": "2024-06-03T18:01:35Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "willhuang1997"
+              },
+              "closer": null
+            },
+            {
+              "__typename": "ReopenedEvent",
+              "id": "REE_lADODCoeTs6KhNC7zwAAAAMIYgKi",
+              "createdAt": "2024-06-03T18:50:05Z",
+              "actor": {
+                "login": "willhuang1997"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAMIYhM3",
+              "createdAt": "2024-06-03T18:50:30Z",
+              "actor": {
+                "login": "willhuang1997"
+              },
+              "label": {
+                "name": "priority:P3"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs6KhNC7zwAAAAMIYhlT",
+              "createdAt": "2024-06-03T18:50:38Z",
+              "actor": {
+                "login": "willhuang1997"
+              },
+              "label": {
+                "name": "status:awaiting-user-response"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAMIYhlc",
+              "createdAt": "2024-06-03T18:50:38Z",
+              "actor": {
+                "login": "willhuang1997"
+              },
+              "label": {
+                "name": "status:confirmed"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAMIYh4x",
+              "createdAt": "2024-06-03T18:50:45Z",
+              "actor": {
+                "login": "willhuang1997"
+              },
+              "label": {
+                "name": "feature:markdown"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6KhNC7zwAAAAQ6NiL6",
+              "createdAt": "2025-06-15T13:57:47Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "feature:st.header"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAABj25kNw",
+              "createdAt": "2026-05-18T16:07:16Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "github-actions"
+              },
+              "source": {
+                "__typename": "Issue"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAACIAud-Q",
+              "createdAt": "2026-08-01T16:14:59Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "sfc-gh-dbyttow"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 16286,
+                "createdAt": "2026-08-01T16:14:58Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs6KhNC7zwAAAAa6hHwV",
+              "createdAt": "2026-08-03T16:03:50Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "sfc-gh-dbyttow"
+              },
+              "closer": {
+                "__typename": "PullRequest",
+                "number": 16286,
+                "createdAt": "2026-08-01T16:14:58Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "i8271": {
+        "id": "I_kwDODCoeTs6ByV5-",
+        "number": 8271,
+        "title": "Improve the customization of all of elements",
+        "url": "https://github.com/streamlit/streamlit/issues/8271",
+        "state": "OPEN",
+        "stateReason": "REOPENED",
+        "createdAt": "2024-03-10T00:18:09Z",
+        "updatedAt": "2026-08-22T10:22:55Z",
+        "closedAt": null,
+        "author": {
+          "login": "lix8886",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:enhancement"
+            },
+            {
+              "name": "area:styling"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoGOMmhACqzExMDMwNDc2NDc2"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6ByV5-zwAAAALPFRUd",
+              "createdAt": "2024-03-10T00:18:09Z",
+              "actor": {
+                "login": "lix8886"
+              },
+              "label": {
+                "name": "type:enhancement"
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs6ByV5-zwAAAALPbdKN",
+              "createdAt": "2024-03-11T08:44:00Z",
+              "stateReason": "COMPLETED",
+              "actor": {
+                "login": "lix8886"
+              },
+              "closer": null
+            },
+            {
+              "__typename": "ReopenedEvent",
+              "id": "REE_lADODCoeTs6ByV5-zwAAAALPbeJQ",
+              "createdAt": "2024-03-11T08:44:22Z",
+              "actor": {
+                "login": "lix8886"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6ByV5-zwAAAALQ8xTn",
+              "createdAt": "2024-03-12T22:00:40Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "area:styling"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs67p33f",
+              "createdAt": "2025-08-29T11:17:30Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "sfc-gh-lmasuch"
+              },
+              "source": {
+                "__typename": "Issue"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAACIVte7Q",
+              "createdAt": "2026-08-02T09:03:45Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 16290,
+                "createdAt": "2026-08-02T09:03:44Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAACkXe2vA",
+              "createdAt": "2026-09-02T19:15:54Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 16788,
+                "createdAt": "2026-09-02T19:15:53Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "i14555": {
+        "id": "I_kwDODCoeTs73_eWR",
+        "number": 14555,
+        "title": "Overlap between cache spinner and progress bar text",
+        "url": "https://github.com/streamlit/streamlit/issues/14555",
+        "state": "OPEN",
+        "stateReason": null,
+        "createdAt": "2026-03-28T16:11:22Z",
+        "updatedAt": "2026-07-19T11:29:51Z",
+        "closedAt": null,
+        "author": {
+          "login": "ghilesmeddour",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:enhancement"
+            },
+            {
+              "name": "feature:cache"
+            },
+            {
+              "name": "area:frontend"
+            },
+            {
+              "name": "feature:st.spinner"
+            },
+            {
+              "name": "feature:st.progress"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoCQ6D6ACqzEwMjI5MDk1MjMx"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWWf_EB",
+              "createdAt": "2026-03-28T16:11:22Z",
+              "actor": {
+                "login": "ghilesmeddour"
+              },
+              "label": {
+                "name": "type:bug"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWWf_EY",
+              "createdAt": "2026-03-28T16:11:23Z",
+              "actor": {
+                "login": "ghilesmeddour"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAABQ_rZmw",
+              "createdAt": "2026-03-29T10:41:30Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "TOga1220"
+              },
+              "source": {
+                "__typename": "PullRequest",
+                "number": 14565,
+                "createdAt": "2026-03-29T10:39:35Z",
+                "repository": {
+                  "nameWithOwner": "streamlit/streamlit"
+                }
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWY9GFO",
+              "createdAt": "2026-03-30T15:35:31Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs73_eWRzwAAAAWY9aGQ",
+              "createdAt": "2026-03-30T15:37:56Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWY9axu",
+              "createdAt": "2026-03-30T15:38:01Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:cache"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWY9bCj",
+              "createdAt": "2026-03-30T15:38:03Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:st.spinner"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWY9bUE",
+              "createdAt": "2026-03-30T15:38:05Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "feature:st.progress"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWY9bkn",
+              "createdAt": "2026-03-30T15:38:07Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "area:frontend"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWeFiuY",
+              "createdAt": "2026-04-01T21:02:47Z",
+              "actor": {
+                "login": "sfc-gh-nbellante"
+              },
+              "label": {
+                "name": "priority:P3"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAWeFiu0",
+              "createdAt": "2026-04-01T21:02:47Z",
+              "actor": {
+                "login": "sfc-gh-nbellante"
+              },
+              "label": {
+                "name": "status:confirmed"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs73_eWRzwAAAAWeFlEs",
+              "createdAt": "2026-04-01T21:03:08Z",
+              "actor": {
+                "login": "sfc-gh-nbellante"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs73_eWRzwAAAAaPkoRj",
+              "createdAt": "2026-07-19T11:29:40Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "type:bug"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs73_eWRzwAAAAaPkoRp",
+              "createdAt": "2026-07-19T11:29:40Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "status:confirmed"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs73_eWRzwAAAAaPkoRs",
+              "createdAt": "2026-07-19T11:29:40Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "priority:P3"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs73_eWRzwAAAAaPkoRz",
+              "createdAt": "2026-07-19T11:29:40Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "type:enhancement"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs8AAAACYbObPw",
+              "createdAt": "2026-08-21T12:09:40Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "github-actions"
+              },
+              "source": {
+                "__typename": "Issue"
+              }
+            }
+          ]
+        }
+      },
+      "i14209": {
+        "id": "I_kwDODCoeTs7vqm7m",
+        "number": 14209,
+        "title": "WebSocket fails behind Istio VirtualService despite websocketUpgrade: true, causing localhost requests to stall even with normal CPU/memory usage",
+        "url": "https://github.com/streamlit/streamlit/issues/14209",
+        "state": "CLOSED",
+        "stateReason": "NOT_PLANNED",
+        "createdAt": "2026-03-04T09:11:57Z",
+        "updatedAt": "2026-06-10T02:38:55Z",
+        "closedAt": "2026-06-08T16:54:43Z",
+        "author": {
+          "login": "Twilighter9527",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:bug"
+            },
+            {
+              "name": "area:network"
+            },
+            {
+              "name": "status:awaiting-user-response"
+            },
+            {
+              "name": "area:deployment"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": []
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABnqgocDgBqzI2NDgyMDgyMTEx"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7vqm7mzwAAAAVqEQ_z",
+              "createdAt": "2026-03-04T09:11:59Z",
+              "actor": {
+                "login": "Twilighter9527"
+              },
+              "label": {
+                "name": "type:bug"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7vqm7mzwAAAAVqERA7",
+              "createdAt": "2026-03-04T09:11:59Z",
+              "actor": {
+                "login": "Twilighter9527"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7vqm7mzwAAAAVqJM3m",
+              "createdAt": "2026-03-04T10:00:02Z",
+              "actor": {
+                "login": "sfc-gh-lmasuch"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs7vqm7mzwAAAAVqJchh",
+              "createdAt": "2026-03-04T10:02:32Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "ai-review"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7vqm7mzwAAAAVqJc5R",
+              "createdAt": "2026-03-04T10:02:35Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "area:network"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7vqm7mzwAAAAVqJdHY",
+              "createdAt": "2026-03-04T10:02:37Z",
+              "actor": {
+                "login": "github-actions"
+              },
+              "label": {
+                "name": "area:deployment"
+              }
+            },
+            {
+              "__typename": "UnlabeledEvent",
+              "id": "UNLE_lADODCoeTs7vqm7mzwAAAAWoSKfv",
+              "createdAt": "2026-04-08T14:03:35Z",
+              "actor": {
+                "login": "sfc-gh-lwilby"
+              },
+              "label": {
+                "name": "status:needs-triage"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs7vqm7mzwAAAAWoSMVd",
+              "createdAt": "2026-04-08T14:03:46Z",
+              "actor": {
+                "login": "sfc-gh-lwilby"
+              },
+              "label": {
+                "name": "status:awaiting-user-response"
+              }
+            },
+            {
+              "__typename": "ClosedEvent",
+              "id": "CE_lADODCoeTs7vqm7mzwAAAAYqdIE_",
+              "createdAt": "2026-06-08T16:54:43Z",
+              "stateReason": "NOT_PLANNED",
+              "actor": {
+                "login": "sfc-gh-kmcgrady"
+              },
+              "closer": null
+            }
+          ]
+        }
+      },
+      "i10023": {
+        "id": "I_kwDODCoeTs6jR6xO",
+        "number": 10023,
+        "title": "Add `height` and `key` to `st.columns`",
+        "url": "https://github.com/streamlit/streamlit/issues/10023",
+        "state": "OPEN",
+        "stateReason": null,
+        "createdAt": "2024-12-13T23:56:31Z",
+        "updatedAt": "2026-10-13T07:45:02Z",
+        "closedAt": null,
+        "author": {
+          "login": "iscoyd",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "type:enhancement"
+            },
+            {
+              "name": "area:layout"
+            },
+            {
+              "name": "feature:st.columns"
+            }
+          ]
+        },
+        "assignees": {
+          "nodes": [
+            {
+              "login": "sfc-gh-lwilby"
+            }
+          ]
+        },
+        "timelineItems": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpPPAAABoTQ41DABqzMzMTExOTkwMDIx"
+          },
+          "nodes": [
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6jR6xOzwAAAAOlFq3-",
+              "createdAt": "2024-12-13T23:56:31Z",
+              "actor": {
+                "login": "iscoyd"
+              },
+              "label": {
+                "name": "type:enhancement"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6jR6xOzwAAAAOlx55X",
+              "createdAt": "2024-12-16T08:14:27Z",
+              "actor": {
+                "login": "jrieke"
+              },
+              "label": {
+                "name": "feature:st.columns"
+              }
+            },
+            {
+              "__typename": "AssignedEvent",
+              "id": "AE_lADODCoeTs6jR6xOzwAAAAQaZpXH",
+              "createdAt": "2025-05-12T19:41:55Z",
+              "actor": {
+                "login": "sfc-gh-lwilby"
+              },
+              "assignee": {
+                "login": "sfc-gh-lwilby"
+              }
+            },
+            {
+              "__typename": "CrossReferencedEvent",
+              "id": "CRE_kwDODCoeTs7CnNvm",
+              "createdAt": "2025-09-09T15:10:08Z",
+              "willCloseTarget": false,
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "source": {
+                "__typename": "Issue"
+              }
+            },
+            {
+              "__typename": "LabeledEvent",
+              "id": "LE_lADODCoeTs6jR6xOzwAAAAe1oN8F",
+              "createdAt": "2026-10-13T07:45:02Z",
+              "actor": {
+                "login": "lukasmasuch"
+              },
+              "label": {
+                "name": "area:layout"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,426 @@
+{
+  "data": {
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4728,
+      "resetAt": "2026-10-29T05:37:01Z"
+    },
+    "repository": {
+      "i17730": {
+        "id": "PR_kwDODCoeTs8AAAABLXFd5w",
+        "number": 17730,
+        "title": "[chore] Raise AI final review auto-approve limit to 2000 lines",
+        "url": "https://github.com/streamlit/streamlit/pull/17730",
+        "state": "MERGED",
+        "isDraft": false,
+        "createdAt": "2026-10-28T20:40:36Z",
+        "updatedAt": "2026-10-28T21:02:58Z",
+        "mergedAt": "2026-10-28T21:01:14Z",
+        "closedAt": "2026-10-28T21:01:14Z",
+        "additions": 3,
+        "deletions": 3,
+        "baseRefName": "develop",
+        "mergeCommit": {
+          "oid": "95e2aa71230cd09c7736a98f4e258933e8fd54b0"
+        },
+        "author": {
+          "login": "lukasmasuch",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "impact:internal"
+            },
+            {
+              "name": "change:chore"
+            }
+          ]
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "authoredDate": "2026-10-28T20:40:13Z",
+                "committedDate": "2026-10-28T20:40:13Z"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMC0yOFQyMDo1OToyOFq0MjAyNi0xMC0yOFQyMDo1OToyN1rPAAAAAVMgr6Q="
+          },
+          "nodes": [
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUx1hag",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-28T20:40:47Z",
+              "author": {
+                "login": "copilot-pull-request-reviewer",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUx10tw",
+              "state": "APPROVED",
+              "submittedAt": "2026-10-28T20:41:12Z",
+              "author": {
+                "login": "sfc-gh-lmasuch",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUx4a4A",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-28T20:44:53Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUx_TnA",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-28T20:54:18Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUx_Xrg",
+              "state": "APPROVED",
+              "submittedAt": "2026-10-28T20:54:24Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUyCvpA",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-28T20:59:28Z",
+              "author": {
+                "login": "lukasmasuch",
+                "__typename": "User"
+              }
+            }
+          ]
+        }
+      },
+      "i17704": {
+        "id": "PR_kwDODCoeTs8AAAABLDIfbQ",
+        "number": 17704,
+        "title": "[fix] Support caller's rights on Snowflake serverless",
+        "url": "https://github.com/streamlit/streamlit/pull/17704",
+        "state": "OPEN",
+        "isDraft": false,
+        "createdAt": "2026-10-27T15:20:23Z",
+        "updatedAt": "2026-10-29T03:45:02Z",
+        "mergedAt": null,
+        "closedAt": null,
+        "additions": 61,
+        "deletions": 9,
+        "baseRefName": "develop",
+        "mergeCommit": null,
+        "author": {
+          "login": "sfc-gh-gwatters",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "impact:internal"
+            },
+            {
+              "name": "change:bugfix"
+            }
+          ]
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "authoredDate": "2026-10-27T15:20:02Z",
+                "committedDate": "2026-10-27T15:20:02Z"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMC0yOVQwMzo0NDowN1q0MjAyNi0xMC0yOVQwMzo0NDowN1rPAAAAAVNOEFs="
+          },
+          "nodes": [
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUgXZmw",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T16:53:52Z",
+              "author": {
+                "login": "sfc-gh-nbellante",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUgspsQ",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T17:19:46Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUgsuMA",
+              "state": "APPROVED",
+              "submittedAt": "2026-10-27T17:19:52Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUguDpw",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T17:21:24Z",
+              "author": {
+                "login": "sfc-gh-nbellante",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABU04NBQ",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-29T03:43:57Z",
+              "author": {
+                "login": "sfc-gh-gwatters",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABU04QWw",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-29T03:44:07Z",
+              "author": {
+                "login": "sfc-gh-gwatters",
+                "__typename": "User"
+              }
+            }
+          ]
+        }
+      },
+      "i17735": {
+        "id": "PR_kwDODCoeTs8AAAABLZwnUw",
+        "number": 17735,
+        "title": "[snapshots] Update E2E snapshots for #17734",
+        "url": "https://github.com/streamlit/streamlit/pull/17735",
+        "state": "MERGED",
+        "isDraft": false,
+        "createdAt": "2026-10-29T00:55:10Z",
+        "updatedAt": "2026-10-29T01:05:20Z",
+        "mergedAt": "2026-10-29T01:05:17Z",
+        "closedAt": "2026-10-29T01:05:17Z",
+        "additions": 0,
+        "deletions": 0,
+        "baseRefName": "fix/element-toolbar-above-selected-segment",
+        "mergeCommit": {
+          "oid": "6b9188706c6024ac98492c2d34635a11ec6bfb63"
+        },
+        "author": {
+          "login": "github-actions",
+          "__typename": "Bot"
+        },
+        "labels": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "authoredDate": "2026-10-29T00:55:06Z",
+                "committedDate": "2026-10-29T00:55:06Z"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": []
+        }
+      },
+      "i17670": {
+        "id": "PR_kwDODCoeTs8AAAABK2LkIg",
+        "number": 17670,
+        "title": " Adjust toggle hover color",
+        "url": "https://github.com/streamlit/streamlit/pull/17670",
+        "state": "CLOSED",
+        "isDraft": false,
+        "createdAt": "2026-10-26T18:46:24Z",
+        "updatedAt": "2026-10-28T17:12:14Z",
+        "mergedAt": null,
+        "closedAt": "2026-10-28T17:12:14Z",
+        "additions": 4,
+        "deletions": 4,
+        "baseRefName": "develop",
+        "mergeCommit": null,
+        "author": {
+          "login": "shamis15",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": []
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "authoredDate": "2026-10-23T16:46:59Z",
+                "committedDate": "2026-10-26T15:54:04Z"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "nodes": []
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": []
+        }
+      },
+      "i17688": {
+        "id": "PR_kwDODCoeTs8AAAABK-5k_w",
+        "number": 17688,
+        "title": "[fix] Clarify parallel fragment outside-write errors",
+        "url": "https://github.com/streamlit/streamlit/pull/17688",
+        "state": "MERGED",
+        "isDraft": false,
+        "createdAt": "2026-10-27T10:00:46Z",
+        "updatedAt": "2026-10-27T11:53:33Z",
+        "mergedAt": "2026-10-27T11:53:31Z",
+        "closedAt": "2026-10-27T11:53:31Z",
+        "additions": 50,
+        "deletions": 23,
+        "baseRefName": "develop",
+        "mergeCommit": {
+          "oid": "62bad13793731a5f65f5394a6b440f47ee671578"
+        },
+        "author": {
+          "login": "sfc-gh-lwilby-1",
+          "__typename": "User"
+        },
+        "labels": {
+          "nodes": [
+            {
+              "name": "change:bugfix"
+            },
+            {
+              "name": "impact:users"
+            }
+          ]
+        },
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "authoredDate": "2026-10-27T10:00:10Z",
+                "committedDate": "2026-10-27T10:00:10Z"
+              }
+            }
+          ]
+        },
+        "closingIssuesReferences": {
+          "nodes": [
+            {
+              "number": 17612,
+              "repository": {
+                "nameWithOwner": "streamlit/streamlit"
+              }
+            }
+          ]
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOnYyOpO0MjAyNi0xMC0yN1QxMTozMDo0OVq0MjAyNi0xMC0yN1QxMTozMDo0OFrPAAAAAVG95PU="
+          },
+          "nodes": [
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUa-o0g",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T10:15:42Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUbD3Ig",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T10:23:22Z",
+              "author": {
+                "login": "sfc-gh-lwilby-1",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUbD46A",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T10:23:24Z",
+              "author": {
+                "login": "sfc-gh-lwilby-1",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUbdr4w",
+              "state": "APPROVED",
+              "submittedAt": "2026-10-27T10:59:17Z",
+              "author": {
+                "login": "github-actions",
+                "__typename": "Bot"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUb1kFg",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T11:27:45Z",
+              "author": {
+                "login": "sfc-gh-lwilby-1",
+                "__typename": "User"
+              }
+            },
+            {
+              "id": "PRR_kwDODCoeTs8AAAABUb3k9Q",
+              "state": "COMMENTED",
+              "submittedAt": "2026-10-27T11:30:49Z",
+              "author": {
+                "login": "sfc-gh-lwilby-1",
+                "__typename": "User"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
