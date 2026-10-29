@@ -11,6 +11,12 @@ from flowlens import __version__
 from flowlens.config import ConfigError, load_config
 from flowlens.ingest.client import GitHubError
 from flowlens.ingest.runner import IngestSummary, ingest_repo, parse_repo
+from flowlens.metrics.dora_report import (
+    dora_report_for,
+    failure_rows,
+    format_dora,
+    write_failures,
+)
 from flowlens.metrics.forecast import ForecastError
 from flowlens.metrics.forecast_report import (
     Throughput,
@@ -122,6 +128,7 @@ def ingest(
             since=since_at,
             full=full,
             workflows=workflows,
+            config=settings,
             data_dir=data_dir,
             progress=lambda message: typer.echo(f"  {message}", err=True),
         )
@@ -249,6 +256,36 @@ def backtest(
     typer.echo(f"\nWrote {out}")
 
 
+@app.command()
+def dora(
+    repo: RepoOption,
+    weeks: Annotated[
+        int, typer.Option(min=1, help="Whole ISO weeks to measure, ending last Monday (UTC).")
+    ] = 26,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
+) -> None:
+    """Deployment frequency, lead time for changes, change failure rate, and failed
+    deployment recovery time, from the deploys flowlens.yaml's deployment_source names.
+
+    Writes every deploy, shipped PR, and failure signal to
+    <data-dir>/out/dora_<owner>__<name>.json, and the failures that counted to
+    <data-dir>/out/dora_failures_<owner>__<name>.csv.
+    """
+    settings = _load_config(config, repo)
+    owner, name = parse_repo(repo)
+    path = _existing_db(data_dir, owner, name)
+    with Store(path) as store:
+        build_model(store, settings, f"{owner}/{name}")
+        report = dora_report_for(store, settings, f"{owner}/{name}", weeks=weeks)
+    out = write_report(report, data_dir / "out" / f"dora_{owner}__{name}.json")
+    failures = write_failures(
+        failure_rows(report), data_dir / "out" / f"dora_failures_{owner}__{name}.csv"
+    )
+    typer.echo(format_dora(report, failures.name))
+    typer.echo(f"\nWrote {out} and {failures}")
+
+
 def _throughput(repo: str, unit: Unit, data_dir: Path, config: Path | None) -> Throughput:
     settings = _load_config(config, repo)
     owner, name = parse_repo(repo)
@@ -306,9 +343,24 @@ def format_summary(summary: IngestSummary, counts: ModelCounts | None = None) ->
         f"  time           {summary.seconds:.1f}s",
         f"  database       {summary.db_path}",
     ]
+    if summary.ranges is not None:
+        ranges = summary.ranges
+        stored = ranges.needed - ranges.fetched
+        missing = f", {ranges.not_found} unknown to GitHub" if ranges.not_found else ""
+        lines.insert(
+            -3,
+            f"  deploy ranges  {ranges.fetched:,} compared ({ranges.commits:,} commits), "
+            f"{stored:,} already stored{missing}; {_plural(ranges.deploys, 'deploy')} from "
+            f"{ranges.source}",
+        )
     if counts is not None:
         lines.append(
             f"  model          {counts.work_items:,} work items, {counts.events:,} events, "
-            f"{counts.deploys:,} deploys"
+            f"{_plural(counts.deploys, 'deploy')}, {counts.changes:,} PRs matched to the "
+            "deploy that shipped them"
         )
     return "\n".join(lines)
+
+
+def _plural(n: int, word: str) -> str:
+    return f"{n:,} {word}" if n == 1 else f"{n:,} {word}s"

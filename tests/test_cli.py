@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 from fakes import fill_with_streamlit
 from flowlens import cli
 from flowlens.ingest.client import GitHubError
-from flowlens.ingest.runner import IngestSummary
+from flowlens.ingest.runner import IngestSummary, RangeTally
 from flowlens.storage import Store, db_path_for
 
 runner = CliRunner()
@@ -103,7 +103,33 @@ def test_ingest_prints_a_summary(fake_ingest):
     assert "runs of Build Release          77 fetched" in result.output
     assert "2025-10-02 → 2026-10-28" in result.output
     assert "27 (GraphQL cost 30, 4,970 of 5,000 points left)" in result.output
-    assert "model          0 work items, 0 events, 0 deploys" in result.output
+    assert "model          0 work items, 0 events, 0 deploys, 0 PRs matched" in result.output
+
+
+def test_ingest_compares_deploys_from_the_configured_source(fake_ingest, tmp_path):
+    (tmp_path / "flowlens.yaml").write_text("deployment_source: deployments\n")
+
+    result = runner.invoke(cli.app, ["ingest", "--repo", "acme/shop"])
+
+    assert result.exit_code == 0, result.output
+    assert fake_ingest["config"].deployment_source == "deployments"
+
+
+def test_summary_reports_the_deploy_ranges():
+    ranges = RangeTally(
+        source="releases", deploys=47, needed=46, fetched=3, commits=210, not_found=1
+    )
+
+    text = cli.format_summary(summary(ranges=ranges))
+
+    assert (
+        "  deploy ranges  3 compared (210 commits), 43 already stored, 1 unknown to GitHub; "
+        "47 deploys from releases"
+    ) in text.splitlines()
+    assert (
+        text.splitlines().index(next(line for line in text.splitlines() if "deploy ranges" in line))
+        == next(i for i, line in enumerate(text.splitlines()) if "API calls" in line) - 1
+    )
 
 
 def test_ingest_passes_workflows_from_config_and_flags(fake_ingest, tmp_path):
@@ -324,3 +350,36 @@ def test_backtest_scores_what_history_allows(streamlit_data):
     assert "8-week horizon: 18 weekly origins" in result.output
     out = streamlit_data / "out" / "backtest_streamlit__streamlit_issue.json"
     assert len(json.loads(out.read_text())["forecasts"]) == (22 + 18) * 3
+
+
+def test_dora_prints_the_four_keys_and_writes_the_trace(streamlit_data):
+    result = runner.invoke(
+        cli.app, ["dora", "--repo", "streamlit/streamlit", "--data-dir", str(streamlit_data)]
+    )
+
+    assert result.exit_code == 0, result.output
+    lines = result.output.splitlines()
+    assert lines[0] == ("DORA (26 weeks, 2026-04-27 → 2026-10-25, deployment source: releases)")
+    # Five recorded releases, 1.63.0 to 1.66.1; the band comes from ./flowlens.yaml.
+    assert lines[1].startswith("Deployment frequency: 0.19/week (median gap 11.8d)")
+    assert lines[1].endswith("band: low")
+    assert "first deploy: nothing to compare with" in result.output  # 1.63.0
+    assert "not fetched: run flowlens ingest" in result.output  # no compares recorded
+    assert "DORA 2024 Accelerate State of DevOps Report" in result.output
+    report = json.loads((streamlit_data / "out" / "dora_streamlit__streamlit.json").read_text())
+    assert [d["name"] for d in report["deploys"]] == [
+        "1.63.0", "1.64.0", "1.65.0", "1.66.0", "1.66.1",
+    ]  # fmt: skip
+    failures = streamlit_data / "out" / "dora_failures_streamlit__streamlit.csv"
+    assert failures.read_text().startswith("deploy,deployed_at,kind,signal,")
+    assert (
+        lines[-1]
+        == f"Wrote {streamlit_data / 'out' / 'dora_streamlit__streamlit.json'} and {failures}"
+    )
+
+
+def test_dora_without_data_says_to_ingest_first(tmp_path):
+    result = runner.invoke(cli.app, ["dora", "--repo", "acme/shop", "--data-dir", str(tmp_path)])
+
+    assert result.exit_code == 1
+    assert "Run `flowlens ingest` first" in result.output
