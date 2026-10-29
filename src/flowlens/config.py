@@ -1,9 +1,12 @@
 """flowlens.yaml: how FlowLens reads a repository's history.
 
 Every key is optional. Top-level keys apply to every repo; a ``repos:`` section can
-override them for one repository (``labels`` and ``exclude`` merge key by key, everything
-else is replaced). Unknown keys are errors, so a typo can't silently fall back to a
-default.
+override them for one repository (``labels``, ``exclude``, ``dora`` and its ``bands``
+merge key by key, everything else is replaced). Unknown keys are errors, so a typo can't
+silently fall back to a default.
+
+DORA performance bands are the one thing with no built-in default: they come from a
+published report, so they live in flowlens.yaml next to the source they cite.
 """
 
 from dataclasses import dataclass, field
@@ -18,6 +21,14 @@ ISSUE_SIGNALS = ("first_assigned", "first_linked_pr")  # plus "label:<name>"
 PR_SIGNALS = ("first_commit", "opened")
 LABEL_KINDS = ("bug", "incident", "hotfix")
 DEPLOYMENT_SOURCES = ("releases", "deployments")  # plus "workflow:<name>"
+# DORA metrics that take bands, and whether a higher value is better.
+DORA_METRICS = {
+    "deployments_per_week": True,
+    "lead_time_hours": False,  # p50 lead time for changes
+    "change_failure_rate": False,  # share of deploys, 0 to 1
+    "recovery_hours": False,  # median failed deployment recovery time
+}
+BAND_NAMES = ("elite", "high", "medium")  # anything past medium is low
 
 
 class ConfigError(ValueError):
@@ -31,6 +42,33 @@ class Exclude:
     state_reasons: tuple[str, ...] = ("NOT_PLANNED", "DUPLICATE")
     labels: tuple[str, ...] = ("duplicate", "wontfix", "invalid")
     bots: bool = True  # items authored by GitHub Apps such as Dependabot
+
+
+@dataclass(frozen=True)
+class Band:
+    """Limits for one DORA metric. A value gets the best band whose limit it meets."""
+
+    elite: float
+    high: float
+    medium: float
+    source: str  # the report the limits come from
+    higher_is_better: bool = False
+
+    def of(self, value: float | None) -> str | None:
+        if value is None:
+            return None
+        for name in BAND_NAMES:
+            limit = getattr(self, name)
+            if (value >= limit) if self.higher_is_better else (value <= limit):
+                return name
+        return "low"
+
+
+@dataclass(frozen=True)
+class Dora:
+    # A deploy failed if a failure signal fires within this many hours after it.
+    failure_window_hours: float = 72.0
+    bands: dict[str, Band] = field(default_factory=dict)  # by DORA_METRICS key
 
 
 @dataclass(frozen=True)
@@ -51,6 +89,7 @@ class Config:
     include_prereleases: bool = False
     workflows: tuple[str, ...] = ()
     exclude: Exclude = field(default_factory=Exclude)
+    dora: Dora = field(default_factory=Dora)
 
     @property
     def deployment_workflow(self) -> str | None:
@@ -100,7 +139,7 @@ def parse_config(data: dict[str, Any]) -> Config:
     """Build a Config from already-parsed YAML, validating every value."""
     known = {
         "started_signal", "pr_started_signal", "labels", "deployment_source",
-        "deployment_environments", "include_prereleases", "workflows", "exclude",
+        "deployment_environments", "include_prereleases", "workflows", "exclude", "dora",
     }  # fmt: skip
     _reject_unknown(data, known, "")
     defaults = Config()
@@ -162,14 +201,67 @@ def parse_config(data: dict[str, Any]) -> Config:
         include_prereleases=_bool(data, "include_prereleases", defaults.include_prereleases),
         workflows=_strings(data, "workflows", defaults.workflows),
         exclude=exclude,
+        dora=_dora(data.get("dora") or {}),
     )
+
+
+def _dora(data: Any) -> Dora:
+    if not isinstance(data, dict):
+        raise ConfigError("dora must be a mapping")
+    _reject_unknown(data, {"failure_window_hours", "bands"}, "dora.")
+    window = data.get("failure_window_hours", Dora.failure_window_hours)
+    if not _is_number(window) or window <= 0:
+        raise ConfigError("dora.failure_window_hours must be a positive number of hours")
+    raw_bands = data.get("bands") or {}
+    if not isinstance(raw_bands, dict):
+        raise ConfigError("dora.bands must map DORA metrics to their limits")
+    _reject_unknown(raw_bands, set(DORA_METRICS), "dora.bands.")
+    bands = {metric: _band(metric, spec) for metric, spec in raw_bands.items()}
+    return Dora(failure_window_hours=float(window), bands=bands)
+
+
+def _band(metric: str, spec: Any) -> Band:
+    prefix = f"dora.bands.{metric}"
+    if not isinstance(spec, dict):
+        raise ConfigError(f"{prefix} must set {', '.join(BAND_NAMES)}, and source")
+    _reject_unknown(spec, {*BAND_NAMES, "source"}, f"{prefix}.")
+    for key in (*BAND_NAMES, "source"):
+        if key not in spec:
+            raise ConfigError(f"{prefix}.{key} is missing")
+    limits = [spec[name] for name in BAND_NAMES]
+    if not all(_is_number(limit) and limit >= 0 for limit in limits):
+        raise ConfigError(f"{prefix}: {', '.join(BAND_NAMES)} must be numbers, 0 or more")
+    higher_is_better = DORA_METRICS[metric]
+    if limits != sorted(limits, reverse=higher_is_better):
+        order = "at least" if higher_is_better else "at most"
+        raise ConfigError(
+            f"{prefix}: limits are {order} values, so elite, high, and medium must "
+            f"{'decrease' if higher_is_better else 'increase'}"
+        )
+    if metric == "change_failure_rate" and max(limits) > 1:
+        raise ConfigError(f"{prefix} is a share of deploys: use 0.15, not 15")
+    source = spec["source"]
+    if not isinstance(source, str) or not source.strip():
+        raise ConfigError(f"{prefix}.source must name the report the limits come from")
+    return Band(
+        *(float(limit) for limit in limits),
+        source=source.strip(),
+        higher_is_better=higher_is_better,
+    )
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
 
 
 def _merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     merged = dict(base)
     for key, value in override.items():
-        if key in {"labels", "exclude"} and isinstance(value, dict):
+        if key in {"labels", "exclude", "dora"} and isinstance(value, dict):
             merged[key] = {**(base.get(key) or {}), **value}
+            if key == "dora" and isinstance(value.get("bands"), dict):
+                base_bands = (base.get(key) or {}).get("bands") or {}
+                merged[key]["bands"] = {**base_bands, **value["bands"]}
         else:
             merged[key] = value
     return merged

@@ -1,5 +1,6 @@
-# FlowLens settings. Every key is optional; the values below are the defaults.
-# A section under `repos:` overrides them for one repository.
+# FlowLens settings. Every key is optional; the values below are the defaults, except
+# dora.bands, which FlowLens doesn't build in. A section under `repos:` overrides them for
+# one repository.
 
 # An issue starts at the earliest of these signals, never before it was opened.
 #   first_assigned   first time anyone was assigned
@@ -28,6 +29,43 @@ include_prereleases: false
 # Actions workflows whose runs to ingest (name or file name), in addition to the
 # deployment workflow when deployment_source is workflow:<name>.
 workflows: []
+
+# DORA metrics (`flowlens dora`).
+dora:
+  # A deploy failed if a failure signal fires within this many hours after it: a merged
+  # PR reverting a PR it shipped, a PR or issue with a hotfix or incident label (see
+  # labels above), or a failed deployment status.
+  failure_window_hours: 72
+  # Performance bands. A metric gets the best band whose limit it meets, otherwise low.
+  # There are no built-in bands: without this section `flowlens dora` shows none.
+  # Approximate: DORA publishes clusters of teams measured on all four metrics at once,
+  # not cut-offs for each metric. Verify against the latest DORA report
+  # (https://dora.dev/research/). The 2025 report replaced the clusters with seven team
+  # archetypes, so the most recent published values are from 2024 and 2023.
+  bands:
+    deployments_per_week:   # at least
+      elite: 7              # on demand, several a day; FlowLens counts daily or more
+      high: 1               # once a day to once a week
+      medium: 0.23          # once a week to once a month (12 a year); low: up to every 6 months
+      source: DORA 2024 Accelerate State of DevOps Report, software delivery performance clusters
+    lead_time_hours:        # p50, at most
+      elite: 24             # less than a day
+      high: 168             # a day to a week
+      medium: 720           # a week to a month; low: one to six months
+      source: DORA 2024 Accelerate State of DevOps Report, software delivery performance clusters
+    change_failure_rate:    # share of deploys, at most
+      # The 2024 clusters put medium (10%) below high (20%), so they can't be applied
+      # one metric at a time. The 2023 clusters are in order.
+      elite: 0.05
+      high: 0.10
+      medium: 0.15          # low: 64%
+      source: DORA 2023 Accelerate State of DevOps Report, performance clusters
+    recovery_hours:         # median failed deployment recovery time, at most
+      # In 2024, high and medium were both "less than one day"; 2023 separates them.
+      elite: 1              # less than an hour
+      high: 24              # less than a day
+      medium: 168           # a day to a week; low: one to six months
+      source: DORA 2023 Accelerate State of DevOps Report, performance clusters
 
 # Items kept in the model but left out of metrics.
 exclude:

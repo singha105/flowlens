@@ -1,10 +1,21 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from flowlens.config import Config, ConfigError, Exclude, load_config, parse_config
+from flowlens.config import (
+    DORA_METRICS,
+    Band,
+    Config,
+    ConfigError,
+    Dora,
+    Exclude,
+    load_config,
+    parse_config,
+)
 
 REPO_CONFIG = Path(__file__).parent.parent / "flowlens.yaml"
+BAND = {"elite": 24, "high": 168, "medium": 720, "source": "DORA 2024"}
 
 
 def write(tmp_path, text: str) -> Path:
@@ -23,8 +34,13 @@ def test_defaults_match_the_brief():
     assert config.exclude.bots is True
 
 
-def test_the_shipped_flowlens_yaml_is_the_defaults_plus_the_demo_repo():
-    assert load_config(REPO_CONFIG) == Config()
+def test_the_shipped_flowlens_yaml_is_the_defaults_plus_bands_and_the_demo_repo():
+    shipped = load_config(REPO_CONFIG)
+    assert replace(shipped, dora=Dora()) == Config()
+    assert shipped.dora.failure_window_hours == 72
+    assert set(shipped.dora.bands) == set(DORA_METRICS)
+    assert all("DORA 202" in band.source for band in shipped.dora.bands.values())
+    assert shipped.dora.bands["deployments_per_week"].higher_is_better
 
     streamlit = load_config(REPO_CONFIG, "streamlit/streamlit")
 
@@ -100,6 +116,31 @@ def test_deployment_workflow_is_ingested_once():
         ({"exclude": {"bot": True}}, "unknown setting exclude.bot"),
         ({"exclude": {"bots": "yes"}}, "exclude.bots must be true or false"),
         ({"include_prereleases": 1}, "include_prereleases must be true or false"),
+        ({"dora": {"window": 24}}, "unknown setting dora.window"),
+        ({"dora": {"failure_window_hours": 0}}, "must be a positive number of hours"),
+        ({"dora": {"failure_window_hours": True}}, "must be a positive number of hours"),
+        ({"dora": {"bands": {"mttr": {}}}}, "unknown setting dora.bands.mttr"),
+        (
+            {"dora": {"bands": {"lead_time_hours": {"elite": 24, "high": 168, "medium": 720}}}},
+            "dora.bands.lead_time_hours.source is missing",
+        ),
+        (
+            {"dora": {"bands": {"lead_time_hours": BAND | {"high": 1000}}}},
+            "elite, high, and medium must increase",
+        ),
+        (
+            {"dora": {"bands": {"deployments_per_week": BAND}}},
+            "elite, high, and medium must decrease",
+        ),
+        ({"dora": {"bands": {"change_failure_rate": BAND}}}, "use 0.15, not 15"),
+        (
+            {"dora": {"bands": {"lead_time_hours": BAND | {"source": " "}}}},
+            "must name the report the limits come from",
+        ),
+        (
+            {"dora": {"bands": {"lead_time_hours": BAND | {"elite": "fast"}}}},
+            "must be numbers, 0 or more",
+        ),
     ],
 )
 def test_bad_settings_are_rejected_with_a_pointer(data, message):
@@ -122,3 +163,40 @@ def test_invalid_yaml_is_a_config_error(tmp_path):
 
 def test_an_empty_file_means_defaults(tmp_path):
     assert load_config(write(tmp_path, "")) == Config()
+
+
+def test_dora_bands_parse_with_their_direction_and_source():
+    config = parse_config(
+        {
+            "dora": {
+                "failure_window_hours": 24,
+                "bands": {
+                    "lead_time_hours": BAND,
+                    "deployments_per_week": {**BAND, "elite": 7, "high": 1, "medium": 0.23},
+                },
+            }
+        }
+    )
+
+    assert config.dora.failure_window_hours == 24.0
+    assert config.dora.bands["lead_time_hours"] == Band(24, 168, 720, "DORA 2024")
+    assert config.dora.bands["deployments_per_week"].higher_is_better
+
+
+def test_a_repo_can_override_one_dora_setting_and_keep_the_bands(tmp_path):
+    path = write(
+        tmp_path,
+        "dora:\n"
+        "  bands:\n"
+        "    lead_time_hours: {elite: 24, high: 168, medium: 720, source: DORA 2024}\n"
+        "repos:\n"
+        "  acme/shop:\n"
+        "    dora:\n"
+        "      failure_window_hours: 168\n",
+    )
+
+    shop = load_config(path, "acme/shop")
+
+    assert shop.dora.failure_window_hours == 168
+    assert shop.dora.bands["lead_time_hours"].source == "DORA 2024"
+    assert load_config(path).dora.failure_window_hours == 72
