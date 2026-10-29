@@ -103,7 +103,7 @@ Pick a repo and a date range, rounded out to whole weeks. Each chart has a one-l
 ## How it works
 
 ```mermaid
-flowchart LR
+flowchart TD
   GH["GitHub GraphQL and REST<br/>issues, timelines, PRs, reviews,<br/>releases, deployments, runs, compares"] -->|"gh auth token, incremental"| ING[ingest]
   ING --> SRC[("DuckDB<br/>source tables")]
   CFG["flowlens.yaml<br/>start signals, labels,<br/>deploy source, bands"] --> MODEL
