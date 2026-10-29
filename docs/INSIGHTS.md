@@ -17,6 +17,8 @@ The window has a natural experiment. Until July, releases came about monthly: 1.
 
 Recovery follows the same rule. The one failed release fixed by a patch release, 1.59.0, recovered in 45 hours (1.59.1). The four that waited for the next minor release took 15, 17, 30 and 39 days, and the median across all six recovered releases is 14.9 days.
 
+![Recovery time per failed release: 30 and 39 days for 1.57.0 and 1.58.0, under two days for 1.59.0 and 1.59.2](img/insight-recovery.png)
+
 ![Lead time for changes per release: p50 near 20 days until July, then mostly 5 to 13 days](img/insight-lead-time.png)
 
 **Recommendation.** Move to a weekly release, and cut a patch release within two days when a `type:regression` issue lands against the latest one, as 1.59.1 did.
