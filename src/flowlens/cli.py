@@ -7,8 +7,12 @@ from typing import Annotated
 import typer
 
 from flowlens import __version__
-from flowlens.ingest.github import GitHubError
+from flowlens.config import ConfigError, load_config
+from flowlens.ingest.client import GitHubError
 from flowlens.ingest.runner import IngestSummary, ingest_repo, parse_repo
+from flowlens.model.build import ModelCounts, build_model
+from flowlens.quality import build_report, format_report
+from flowlens.storage import Store, db_path_for
 
 DEFAULT_DATA_DIR = Path("data")
 
@@ -56,9 +60,17 @@ def _check_repo(value: str) -> str:
     return value
 
 
+RepoOption = Annotated[str, typer.Option(help="Repository as owner/name.", callback=_check_repo)]
+DataDirOption = Annotated[Path, typer.Option(help="Directory for the per-repo DuckDB files.")]
+ConfigOption = Annotated[
+    Path | None,
+    typer.Option(help="Settings file. Defaults to ./flowlens.yaml when it exists."),
+]
+
+
 @app.command()
 def ingest(
-    repo: Annotated[str, typer.Option(help="Repository as owner/name.", callback=_check_repo)],
+    repo: RepoOption,
     since: Annotated[
         str | None,
         typer.Option(help="Oldest history to keep: items updated on or after this date (UTC)."),
@@ -66,31 +78,68 @@ def ingest(
     full: Annotated[
         bool, typer.Option("--full", help="Ignore earlier runs and refetch from --since.")
     ] = False,
-    data_dir: Annotated[
-        Path, typer.Option(help="Directory for the per-repo DuckDB files.")
-    ] = DEFAULT_DATA_DIR,
+    workflow: Annotated[
+        list[str] | None,
+        typer.Option(help="Also ingest this Actions workflow's runs (name or file). Repeatable."),
+    ] = None,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
 ) -> None:
-    """Fetch issues and pull requests into data/<owner>__<repo>.duckdb."""
+    """Fetch issues, PRs, releases, deployments, and workflow runs, then rebuild the model."""
     since_at = parse_since(since)
+    settings = _load_config(config, repo)
+    workflows = tuple(dict.fromkeys([*settings.ingest_workflows, *(workflow or [])]))
     try:
         summary = ingest_repo(
             repo,
             since=since_at,
             full=full,
+            workflows=workflows,
             data_dir=data_dir,
             progress=lambda message: typer.echo(f"  {message}", err=True),
         )
     except GitHubError as exc:
         typer.echo(f"error: {exc}", err=True)
         raise typer.Exit(1) from exc
-    typer.echo(format_summary(summary))
+    with Store(summary.db_path) as store:
+        counts = build_model(store, settings, summary.repo)
+    typer.echo(format_summary(summary, counts))
 
 
-def format_summary(summary: IngestSummary) -> str:
+@app.command()
+def quality(
+    repo: RepoOption,
+    data_dir: DataDirOption = DEFAULT_DATA_DIR,
+    config: ConfigOption = None,
+) -> None:
+    """Report how much of the ingested history FlowLens can measure."""
+    settings = _load_config(config, repo)
+    owner, name = parse_repo(repo)
+    path = db_path_for(data_dir, owner, name)
+    if not path.exists():
+        typer.echo(
+            f"error: no data for {repo} in {data_dir}. Run `flowlens ingest` first.", err=True
+        )
+        raise typer.Exit(1)
+    with Store(path) as store:
+        build_model(store, settings, f"{owner}/{name}")
+        report = build_report(store, settings, f"{owner}/{name}")
+    typer.echo(format_report(report))
+
+
+def _load_config(path: Path | None, repo: str):
+    try:
+        return load_config(path, repo)
+    except ConfigError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(2) from exc
+
+
+def format_summary(summary: IngestSummary, counts: ModelCounts | None = None) -> str:
     def since_label(value: datetime | None) -> str:
         if value is None:
             return "all history"
-        return f"updated since {value:%Y-%m-%d %H:%M} UTC"
+        return f"since {value:%Y-%m-%d %H:%M} UTC"
 
     if summary.first_updated and summary.last_updated:
         date_range = f"{summary.first_updated:%Y-%m-%d} → {summary.last_updated:%Y-%m-%d}"
@@ -100,16 +149,19 @@ def format_summary(summary: IngestSummary) -> str:
     if summary.rate_remaining is not None:
         rate = f", {summary.rate_remaining:,} of {summary.rate_limit:,} points left"
 
-    issues_since = since_label(summary.issues_since)
-    prs_since = since_label(summary.prs_since)
-    lines = [
-        f"FlowLens ingest · {summary.repo} ({summary.mode} run)",
-        f"  issues         {summary.issues_fetched:>6,} fetched  ({issues_since})",
-        f"  pull requests  {summary.prs_fetched:>6,} fetched  ({prs_since})",
-        f"  date range     {date_range} (last updated)",
-        f"  API calls      {summary.api_calls:,} (rate-limit cost {summary.api_cost:,}{rate})",
+    lines = [f"FlowLens ingest · {summary.repo} ({summary.mode} run)"]
+    for entity, fetched in summary.fetched.items():
+        label = entity.replace("_", " ").replace("workflow runs:", "runs of ")
+        lines.append(f"  {label:<26} {fetched:>6,} fetched  ({since_label(summary.since[entity])})")
+    lines += [
+        f"  date range     {date_range} (issues and PRs, last updated)",
+        f"  API calls      {summary.api_calls:,} (GraphQL cost {summary.api_cost:,}{rate})",
         f"  time           {summary.seconds:.1f}s",
-        f"  database       {summary.db_path} "
-        f"({summary.issues_stored:,} issues, {summary.prs_stored:,} PRs stored)",
+        f"  database       {summary.db_path}",
     ]
+    if counts is not None:
+        lines.append(
+            f"  model          {counts.work_items:,} work items, {counts.events:,} events, "
+            f"{counts.deploys:,} deploys"
+        )
     return "\n".join(lines)
