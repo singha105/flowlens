@@ -193,3 +193,35 @@
   - Compares are fetched for the configured source only; switching `deployment_source` needs an `ingest`
 - Manual steps for Arnab: none
 - Next: Day 6, the Streamlit dashboard, the HTML report, GitHub Pages, and CI
+
+## Day 6 — 2026-10-29
+- Done: a Streamlit dashboard, a static HTML report, CI, and a weekly report published to GitHub Pages: [singha105.github.io/flowlens](https://singha105.github.io/flowlens/)
+  - `flowlens report --repo owner/name` writes `site/index.html`: one self-contained page (plotly.js inlined, about 5 MB) that opens with three summary bullets generated from the numbers, then stat tiles and 13 charts in four sections (Flow, Forecast, DORA, PR flow), each chart with a one-sentence "how to read this" caption and its table. It has a light and a dark theme, a sticky section nav, and no horizontal scroll at phone width. `site/data/` keeps the JSON and CSV it was built from
+  - `app/dashboard.py` (`uv run streamlit run app/dashboard.py`): repo picker over `data/`, a date range rounded out to whole ISO weeks, and four tabs. Flow: cycle-time scatter with p50/p85/p95 lines, weekly throughput, cumulative flow, aging WIP against the percentiles. Forecast: interactive "when will N be done" and "how many by this date" with the simulated distribution and percentile markers, plus the backtest calibration chart. DORA: the four keys with bands, 26-week trends, and the failed deployments table. PR flow: monthly stage breakdown with the bottleneck highlighted. Tabs open from the URL (`?tab=DORA`)
+  - `snapshot.py` loads a repo's model once, so the dashboard and the report compute the same reports as the commands for any whole-week range (tested equal); `charts.py` builds every chart with its caption and table; `summary.py` holds the bullet and tile wording rules
+  - `.github/workflows/ci.yml` runs `uv sync --locked`, ruff check, ruff format, and pytest on every push and PR. `.github/workflows/weekly-report.yml` runs Mondays 06:00 UTC and on demand: restores last week's database from the Actions cache, ingests streamlit/streamlit with the built-in `GITHUB_TOKEN`, runs `flowlens report`, and deploys `site/` with configure-pages, upload-pages-artifact, and deploy-pages. GitHub Pages enabled with source "GitHub Actions" (`gh api -X POST repos/singha105/flowlens/pages -f build_type=workflow`) after Arnab approved it
+  - Streamlit Community Cloud prep: `app/requirements.txt` (FlowLens from this repo plus Streamlit, installed into a clean Python 3.12 venv to check), `.streamlit/config.toml` (theme, minimal toolbar, no usage stats), no secrets: with no local data the app downloads the database the weekly workflow publishes. Deploy steps are in the README
+  - Screenshots of the four tabs and the report (desktop and phone) in `docs/img/`, taken by `scripts/screenshots.py` through the installed Chrome
+  - 410 offline tests (361 on Day 5): week rounding of date ranges, dashboard views equal to the command-line reports, every chart's numbers and caption, coinciding percentile markers, the dark-mode colour map covering every colour a figure uses, empty windows, the summary's rules at their edges, a self-contained page where a `</script>` issue title stays text, a repo too young to forecast, the `report` command, and the dashboard end to end with Streamlit's AppTest (all tabs, a new date range, the snapshot download, an unreachable snapshot). Ruff clean, CI green
+  - Demo summary, streamlit/streamlit, 26 weeks to 2026-10-25:
+    ```
+    - PRs are predictable, forecasts optimistic: 85% of PRs merge within 8.1 days of starting, but 85% issue forecasts held only 71% of the time in backtests, so quote the 95% (held 85%).
+    - The bottleneck is waiting, not building: waiting for first review takes a median of 28 hours, 89% of the summed PR stage medians. Human reviews are getting rare: 27% of October's merged PRs had one.
+    - DORA: medium deployment frequency (0.54 a week), but 60% of lead time is waiting for a release; 50% of deploys failed within 72 hours (low band).
+    ```
+- Decisions: the dashboard only reads. It opens each database read-only and shows the model as the last `flowlens` command built it, cached by file and modification time, so a new ingest shows up on the next rerun
+  - A date range becomes whole ISO weeks, Monday of the first day to the Sunday of the last, capped at the last whole week; WIP and aging are as of the range's end. Forecasts always start after the last ingest, whatever the range, because a forecast from the past is a backtest
+  - Colour has one job per chart: PRs blue and issues orange everywhere, gray for context, and red, amber, and green only for good and bad (failed deploys, items older than p85, bands). In PR flow only the bottleneck is coloured. Dark mode uses its own steps, swapped in the page and checked by a test that every colour a figure uses has one
+  - Summary wording follows fixed rules (in METRICS.md): within 5 points of 85% is "predictable", below is "optimistic" with advice to quote the 95%, above "cautious"; "waiting, not building" when a waiting stage is the bottleneck; "but" when half or more of lead time is waiting
+  - plotly.js is inlined, not loaded from a CDN, so the page works offline and as an attachment, at the cost of 4.8 MB
+  - The workflow publishes the demo database next to the report (about 50 MB, public GitHub data only, checked for token-shaped strings) so the hosted dashboard needs no token and no secrets
+  - The Actions cache keeps the database between weekly runs (key per run, restored by prefix). A miss means a full two-year ingest, about 20 minutes and 480 GraphQL points, under the 1,000 points an hour `GITHUB_TOKEN` gets
+  - setup-uv is pinned to v10.3.3: it publishes no major tag, and the first CI run failed resolving `@v10`
+  - Streamlit sits in a `dashboard` dependency group that `uv sync` installs by default, so the dashboard command works from a fresh clone and the CLI's dependencies stay small
+- Known gaps: the screenshots are light mode only
+  - The hosted dashboard shows the snapshot it downloaded at start-up until the app is rebooted
+  - GitHub evicts caches unused for 7 days and the workflow runs every 7, so some weeks will fall back to a full ingest; it costs time, not money
+  - GitHub disables scheduled workflows in a repository with no activity for 60 days
+  - The report shows one repo and one 26-week window; the dashboard covers any repo in `data/` and any range
+- Manual steps for Arnab: optional, deploy the dashboard on Streamlit Community Cloud (steps in the README, about 5 minutes, free)
+- Next: Day 7

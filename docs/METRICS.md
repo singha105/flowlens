@@ -306,6 +306,14 @@ Failed deployment recovery time: median 14.9d (6 recovered, 1 not yet)  band: lo
 
 `flowlens flow` prints notes under the table when the data is thin: issue cycle-time coverage, merged PRs with no human review, a window that starts before the ingested history, and the history caveat. The JSON in `data/out/flow_<owner>__<name>.json` holds every series: lead and cycle summaries per type and group, weekly throughput, daily WIP, cumulative flow per type, the aging list, PR flow with its monthly breakdown, coverage counts, and the notes.
 
+`flowlens report` and the dashboard open with three summary bullets. Each judgment in them is a fixed rule over the numbers above ([src/flowlens/summary.py](../src/flowlens/summary.py)), so the words change only when the numbers do:
+
+- **Delivery.** The PR cycle-time p85 (issues when no PR finished), then the backtest at a 4-week horizon with 12 weeks of history: an 85% forecast that held within 5 points of 85% is "predictable"; below 80% the forecasts are "optimistic" and the bullet says to quote the 95%; above 90%, "cautious". Without enough history to backtest, it says so.
+- **Bottleneck.** The PR flow stage with the largest median and its share of the summed stage medians. The two waiting stages read "waiting, not building". When fewer than half of the last month's merged PRs had a human review, the bullet adds that, because the review stages then describe few PRs.
+- **DORA.** The deployment frequency and its band, the share of lead time spent merged and waiting for a deploy ("but" from 50% up, "and" below), and the change failure rate with its failure window and band.
+
+The dashboard reads the same database the commands do, as the last command left it, and computes the same reports for any whole-week range; the report page and its `data/` files are what the weekly workflow publishes.
+
 ## How the metrics are tested
 
 `tests/synthetic.py` simulates a team: Poisson arrivals, an exponential wait before work starts, lognormal cycle times, never-started and not-planned issues, bots, abandoned and unreviewed PRs, lognormal PR stages, all cut off at *as of* the way an ingest sees them. The tests check:
