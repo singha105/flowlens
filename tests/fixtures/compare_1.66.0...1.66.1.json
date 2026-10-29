@@ -1,0 +1,83 @@
+{
+ "ahead_by": 4,
+ "behind_by": 0,
+ "commits": [
+  {
+   "author": {
+    "login": "sfc-gh-lmasuch",
+    "type": "User"
+   },
+   "commit": {
+    "author": {
+     "date": "2026-10-21T14:20:59Z"
+    },
+    "committer": {
+     "date": "2026-10-21T14:20:59Z"
+    },
+    "message": "Up version to 1.66.1"
+   },
+   "sha": "c706d9a44df02167421ad6c0946d33f5a2c6addd"
+  },
+  {
+   "author": {
+    "login": "lukasmasuch",
+    "type": "User"
+   },
+   "commit": {
+    "author": {
+     "date": "2026-10-21T10:17:53Z"
+    },
+    "committer": {
+     "date": "2026-10-21T14:27:31Z"
+    },
+    "message": "[chore] Allow Pillow 13 (#17589)"
+   },
+   "sha": "7526d1bd1b4ce14065e20467017d7bafd9dbd462"
+  },
+  {
+   "author": {
+    "login": "sfc-gh-lmasuch",
+    "type": "User"
+   },
+   "commit": {
+    "author": {
+     "date": "2026-10-20T09:45:00Z"
+    },
+    "committer": {
+     "date": "2026-10-21T15:43:27Z"
+    },
+    "message": "[fix] Use canonical timezone names in Python unit tests (#17567)"
+   },
+   "sha": "1359d6ed763d3dabbb9124dd69adb0d17a125be1"
+  },
+  {
+   "author": {
+    "login": "lukasmasuch",
+    "type": "User"
+   },
+   "commit": {
+    "author": {
+     "date": "2026-10-21T16:19:15Z"
+    },
+    "committer": {
+     "date": "2026-10-21T16:19:15Z"
+    },
+    "message": "[chore] Update map and pydeck snapshots from 1.66.1 CI"
+   },
+   "sha": "ca6718b7d3d788c31c97d1bc9144fd8388168f57"
+  }
+ ],
+ "files": [
+  {
+   "filename": "e2e_playwright/__snapshots__/linux/st_layouts_container_various_elements_test/st_layouts_container_various_elements-layout-horizontal-map[chromium].png",
+   "status": "modified"
+  },
+  {
+   "filename": "e2e_playwright/__snapshots__/linux/st_map_test/st_map-empty[dark_theme-chromium].png",
+   "status": "modified"
+  }
+ ],
+ "status": "ahead",
+ "total_commits": 4,
+ "url": "https://api.github.com/repos/streamlit/streamlit/compare/1.66.0...1.66.1"
+}

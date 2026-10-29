@@ -2,8 +2,8 @@
 
 Two layers live in each file. Source tables (issues, pull_requests, issue_events, ...) hold
 GitHub data close to how it was fetched and are upserted by key, so re-running an ingest
-is safe. Model tables (work_items, work_item_events, deploys) are derived from them by
-flowlens.model and rebuilt from scratch each time.
+is safe. Model tables (work_items, work_item_events, deploys, deployment_changes) are
+derived from them by flowlens.model and rebuilt from scratch each time.
 
 Timestamps are stored as naive UTC ``TIMESTAMP`` values and come back out as aware UTC
 datetimes.
@@ -141,6 +141,31 @@ CREATE TABLE IF NOT EXISTS workflow_runs (
     url             VARCHAR
 );
 
+-- The commits between two consecutive deploys, from the compare API. Commits never change,
+-- so a stored compare is never fetched again.
+CREATE TABLE IF NOT EXISTS compares (
+    id             VARCHAR PRIMARY KEY,  -- "<base sha>...<head sha>"
+    base_sha       VARCHAR NOT NULL,
+    head_sha       VARCHAR NOT NULL,
+    status         VARCHAR NOT NULL,     -- ahead | behind | diverged | identical | not_found
+    ahead_by       INTEGER,
+    behind_by      INTEGER,
+    total_commits  INTEGER,              -- commits in head that aren't in base
+    fetched        INTEGER NOT NULL,     -- commits stored; fewer than total if GitHub cut it short
+    fetched_at     TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS compare_commits (
+    id            VARCHAR PRIMARY KEY,   -- "<compare id>:<sha>"
+    compare_id    VARCHAR NOT NULL,
+    position      INTEGER NOT NULL,      -- 0 is the oldest
+    sha           VARCHAR NOT NULL,
+    message       VARCHAR NOT NULL,
+    author        VARCHAR,               -- GitHub login; NULL when the email isn't linked
+    authored_at   TIMESTAMP,
+    committed_at  TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS work_items (
     id              VARCHAR PRIMARY KEY, -- "issue#123" | "pr#456"
     type            VARCHAR NOT NULL,    -- issue | pr
@@ -182,6 +207,15 @@ CREATE TABLE IF NOT EXISTS deploys (
     status       VARCHAR NOT NULL,       -- success | failure
     deployed_at  TIMESTAMP NOT NULL,
     url          VARCHAR
+);
+
+-- Which deploy shipped each merged PR: the first one whose compare range holds its merge
+-- commit, or a commit that names it ("Title (#123)", as cherry-picks and squashes do).
+CREATE TABLE IF NOT EXISTS deployment_changes (
+    pr_number   INTEGER PRIMARY KEY,
+    deploy_id   VARCHAR NOT NULL,
+    commit_sha  VARCHAR NOT NULL,        -- the commit in that deploy's range that carried it
+    matched_by  VARCHAR NOT NULL         -- merge_commit | pr_reference
 );
 
 CREATE SEQUENCE IF NOT EXISTS ingest_run_id;
@@ -288,6 +322,20 @@ TABLES: dict[str, Table] = {
         key="id",
         version="updated_at",
     ),
+    "compares": Table(
+        (
+            "id", "base_sha", "head_sha", "status", "ahead_by", "behind_by", "total_commits",
+            "fetched", "fetched_at",
+        ),
+        key="id",
+    ),
+    "compare_commits": Table(
+        (
+            "id", "compare_id", "position", "sha", "message", "author", "authored_at",
+            "committed_at",
+        ),
+        key="id",
+    ),
     "work_items": Table(
         (
             "id", "type", "number", "title", "url", "author", "author_type", "created_at",
@@ -303,9 +351,12 @@ TABLES: dict[str, Table] = {
         ("id", "source", "name", "sha", "environment", "status", "deployed_at", "url"),
         key="id",
     ),
+    "deployment_changes": Table(
+        ("pr_number", "deploy_id", "commit_sha", "matched_by"), key="pr_number"
+    ),
 }  # fmt: skip
 
-MODEL_TABLES = ("work_items", "work_item_events", "deploys")
+MODEL_TABLES = ("work_items", "work_item_events", "deploys", "deployment_changes")
 INSERT_CHUNK = 500
 
 

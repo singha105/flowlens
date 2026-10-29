@@ -1,8 +1,10 @@
-"""Delivery signals: releases, GitHub Deployments, and Actions workflow runs.
+"""Delivery signals: releases, GitHub Deployments, Actions workflow runs, and the commits
+each deploy shipped.
 
 Releases and deployments come from GraphQL, newest-created first. Workflow runs are only
 available over REST, which caps any filtered search at 1,000 results, so a date range that
-holds more is split in half until each part fits.
+holds more is split in half until each part fits. The commits between two deploys come
+from the REST compare API, as ``git log base...head`` would list them.
 """
 
 from collections.abc import Iterator
@@ -17,6 +19,7 @@ RELEASE_PAGE_SIZE = 100
 DEPLOYMENT_PAGE_SIZE = 100
 WORKFLOW_RUN_PAGE_SIZE = 100
 RUN_SEARCH_CAP = 1000
+COMPARE_PAGE_SIZE = 100
 
 RELEASES_QUERY = """
 query Releases($owner: String!, $name: String!, $first: Int!, $cursor: String) {
@@ -130,6 +133,69 @@ def _runs_between(
     for page in pages:
         if page["workflow_runs"]:
             yield page["workflow_runs"]
+
+
+def fetch_compare(
+    client: GitHubClient,
+    owner: str,
+    name: str,
+    base: str,
+    head: str,
+    page_size: int = COMPARE_PAGE_SIZE,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """The comparison of two commits and every commit in ``head`` that isn't in ``base``,
+    oldest first. Each page repeats the comparison's totals; only the commits are joined.
+    """
+    path = f"/repos/{owner}/{name}/compare/{base}...{head}"
+    summary: dict[str, Any] = {}
+    commits: list[dict[str, Any]] = []
+    for page in client.get_pages(path, {"per_page": page_size}):
+        summary = summary or page
+        commits.extend(page["commits"])
+    return summary, commits
+
+
+def compare_id(base: str, head: str) -> str:
+    return f"{base}...{head}"
+
+
+def compare_row(
+    base: str,
+    head: str,
+    summary: dict[str, Any] | None,
+    commits: list[dict[str, Any]],
+    fetched_at: datetime,
+) -> dict[str, Any]:
+    """A compares row; ``summary`` is None when GitHub doesn't know one of the commits."""
+    summary = summary or {}
+    return {
+        "id": compare_id(base, head),
+        "base_sha": base,
+        "head_sha": head,
+        "status": summary.get("status") or "not_found",
+        "ahead_by": summary.get("ahead_by"),
+        "behind_by": summary.get("behind_by"),
+        "total_commits": summary.get("total_commits"),
+        "fetched": len(commits),
+        "fetched_at": fetched_at,
+    }
+
+
+def compare_commit_rows(base: str, head: str, commits: list[dict[str, Any]]) -> list[dict]:
+    range_id = compare_id(base, head)
+    return [
+        {
+            "id": f"{range_id}:{commit['sha']}",
+            "compare_id": range_id,
+            "position": position,
+            "sha": commit["sha"],
+            "message": commit["commit"]["message"],
+            "author": (commit.get("author") or {}).get("login"),
+            "authored_at": parse_ts((commit["commit"].get("author") or {}).get("date")),
+            "committed_at": parse_ts((commit["commit"].get("committer") or {}).get("date")),
+        }
+        for position, commit in enumerate(commits)
+    ]
 
 
 def release_row(node: dict[str, Any]) -> dict[str, Any]:

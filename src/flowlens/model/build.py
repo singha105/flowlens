@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 from flowlens.config import Config
+from flowlens.model.changes import map_changes
 from flowlens.model.deploys import resolve_deploys
 from flowlens.model.work_items import issue_work_item, pull_request_work_item
 from flowlens.storage import Store
@@ -16,10 +17,12 @@ class ModelCounts:
     work_items: int
     events: int
     deploys: int
+    changes: int = 0  # merged PRs matched to the deploy that shipped them
 
 
 def build_model(store: Store, config: Config, repo: str) -> ModelCounts:
-    """Derive work_items, work_item_events, and deploys, replacing what was there.
+    """Derive work_items, work_item_events, deploys, and deployment_changes, replacing
+    what was there.
 
     The model is cheap to rebuild and depends on flowlens.yaml, so it's never patched in
     place: change the config, rebuild, and every item reflects the new rules.
@@ -55,14 +58,16 @@ def build_model(store: Store, config: Config, repo: str) -> ModelCounts:
         statuses=store.rows("deployment_statuses"),
         runs=store.rows("workflow_runs"),
     )
+    changes = map_changes(deploys, store.rows("compare_commits"), pull_requests)
     store.replace(
         {
             "work_items": [asdict(item) for item in items],
             "work_item_events": [asdict(event) for event in events],
             "deploys": [asdict(deploy) for deploy in deploys],
+            "deployment_changes": [asdict(change) for change in changes],
         }
     )
-    return ModelCounts(len(items), len(events), len(deploys))
+    return ModelCounts(len(items), len(events), len(deploys), len(changes))
 
 
 def _group(rows: list[dict[str, Any]], key: str) -> dict[Any, list[dict[str, Any]]]:

@@ -4,6 +4,10 @@
 run only asks GitHub for items changed after each entity's high-water mark, as long as the
 database already reaches back as far as the new ``--since`` and was filled by the current
 set of queries. Otherwise (or with ``--full``) everything is fetched again from ``--since``.
+
+Given the settings, the run then compares each deploy from the configured source with the
+one before it, so the model can tell which PRs each deploy shipped. Commits never change,
+so a range is fetched once and kept.
 """
 
 import time
@@ -13,10 +17,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from flowlens.ingest.client import GitHubClient, token_from_gh
+from flowlens.config import Config
+from flowlens.ingest.client import GitHubClient, GitHubNotFoundError, token_from_gh
 from flowlens.ingest.delivery import (
+    compare_commit_rows,
+    compare_row,
     deployment_row,
     deployment_status_rows,
+    fetch_compare,
     fetch_deployments,
     fetch_releases,
     fetch_workflow_runs,
@@ -33,6 +41,8 @@ from flowlens.ingest.github import (
     pull_request_row,
     review_rows,
 )
+from flowlens.model.changes import deploy_ranges
+from flowlens.model.deploys import resolve_deploys
 from flowlens.storage import PreviousRun, Store, db_path_for
 
 # Bump when what gets fetched changes: older data then gets refetched in full.
@@ -71,6 +81,18 @@ class RunPlan:
 
 
 @dataclass(frozen=True)
+class RangeTally:
+    """The compare ranges behind the deploys from the configured source."""
+
+    source: str
+    deploys: int  # successful deploys
+    needed: int  # deploys with an earlier, different commit to compare with
+    fetched: int  # compares fetched by this run; the rest were already stored
+    commits: int  # commits those compares returned
+    not_found: int  # compares GitHub couldn't make (a commit no longer exists)
+
+
+@dataclass(frozen=True)
 class IngestSummary:
     repo: str
     db_path: Path
@@ -85,6 +107,7 @@ class IngestSummary:
     rate_limit: int | None
     seconds: float
     stored: dict[str, int] = field(default_factory=dict)
+    ranges: RangeTally | None = None
 
 
 def parse_repo(repo: str) -> tuple[str, str]:
@@ -225,6 +248,49 @@ def _drain(entity: Entity, since: datetime | None, store: Store, progress: Calla
     return tally
 
 
+def fetch_deploy_ranges(
+    client: GitHubClient,
+    store: Store,
+    owner: str,
+    name: str,
+    config: Config,
+    progress: Callable[[str], None],
+) -> RangeTally:
+    """Compare every successful deploy with the one before it, unless already stored."""
+    deploys = resolve_deploys(
+        config,
+        releases=store.rows("releases"),
+        deployments=store.rows("deployments"),
+        statuses=store.rows("deployment_statuses"),
+        runs=store.rows("workflow_runs"),
+    )
+    ranges = {r.compare_id: r for r in deploy_ranges(deploys) if r.compare_id}
+    stored = {row["id"] for row in store.rows("compares")}
+    missing = [r for range_id, r in ranges.items() if range_id not in stored]
+    commits = not_found = 0
+    for number, deploy_range in enumerate(missing, start=1):
+        base, head = deploy_range.base_sha, deploy_range.head_sha
+        assert base and head
+        try:
+            summary, fetched = fetch_compare(client, owner, name, base, head)
+        except GitHubNotFoundError:
+            summary, fetched = None, []
+            not_found += 1
+        # Commits first: a compares row means its commits are all stored.
+        store.upsert("compare_commits", compare_commit_rows(base, head, fetched))
+        store.upsert("compares", [compare_row(base, head, summary, fetched, client.now())])
+        commits += len(fetched)
+        progress(f"deploy ranges: {number} of {len(missing)} compared, {commits} commits")
+    return RangeTally(
+        source=config.deployment_source,
+        deploys=sum(deploy.status == "success" for deploy in deploys),
+        needed=len(ranges),
+        fetched=len(missing),
+        commits=commits,
+        not_found=not_found,
+    )
+
+
 def _later(a: datetime | None, b: datetime | None) -> datetime | None:
     if a is None or b is None:
         return a or b
@@ -243,12 +309,14 @@ def ingest_repo(
     since: datetime | None = None,
     full: bool = False,
     workflows: tuple[str, ...] = (),
+    config: Config | None = None,
     data_dir: Path = Path("data"),
     client: GitHubClient | None = None,
     progress: Callable[[str], None] | None = None,
 ) -> IngestSummary:
     """Fetch issues, PRs, releases, deployments, and the named workflows' runs for
-    ``owner/name`` into ``data_dir/<owner>__<name>.duckdb``."""
+    ``owner/name`` into ``data_dir/<owner>__<name>.duckdb``; with ``config``, also the
+    commits each deploy from its ``deployment_source`` shipped."""
     owner, name = parse_repo(repo)
     repo = f"{owner}/{name}"
     progress = progress or (lambda _message: None)
@@ -280,6 +348,7 @@ def ingest_repo(
                 coverage_from=plan.coverage_from,
             )
             tallies: dict[str, _Tally] = {}
+            ranges: RangeTally | None = None
             previous = plan.previous
             try:
                 for entity in entities:
@@ -292,6 +361,15 @@ def ingest_repo(
                         since_used=plan.since[entity.name],
                         fetched=tally.fetched,
                         watermark=_later(carried, tally.last),
+                    )
+                if config is not None:
+                    ranges = fetch_deploy_ranges(client, store, owner, name, config, progress)
+                    store.record_entity(
+                        run_id,
+                        "deploy_ranges",
+                        since_used=None,
+                        fetched=ranges.fetched,
+                        watermark=None,
                     )
             except BaseException as exc:
                 # Only successful runs are planned from, so the last good run's watermarks
@@ -329,4 +407,5 @@ def ingest_repo(
         rate_limit=rate.limit if rate else None,
         seconds=time.monotonic() - started,
         stored=stored,
+        ranges=ranges,
     )

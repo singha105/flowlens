@@ -32,6 +32,10 @@ class GitHubAuthError(GitHubError):
     """No usable token, or GitHub rejected it."""
 
 
+class GitHubNotFoundError(GitHubError):
+    """A REST path that doesn't exist (HTTP 404)."""
+
+
 def token_from_gh() -> str:
     """Return the token the GitHub CLI is logged in with. It is kept in memory only."""
     try:
@@ -145,7 +149,7 @@ class GitHubClient:
         if response.status_code == 401:
             raise GitHubAuthError("GitHub rejected the token (HTTP 401). Run `gh auth login`.")
         if response.status_code == 404:
-            raise GitHubError(f"Not found: {response.request.url.path}")
+            raise GitHubNotFoundError(f"Not found: {response.request.url.path}")
         if not response.is_success:
             raise GitHubError(f"HTTP {response.status_code}: {response.text[:300]}")
         headers = response.headers
