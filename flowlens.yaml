@@ -1,0 +1,50 @@
+# FlowLens settings. Every key is optional; the values below are the defaults.
+# A section under `repos:` overrides them for one repository.
+
+# An issue starts at the earliest of these signals, never before it was opened.
+#   first_assigned   first time anyone was assigned
+#   first_linked_pr  when the first linked PR was opened (closing keyword, manual link,
+#                    or the PR that closed it; a plain mention doesn't count)
+#   label:<name>     first time that label was added
+started_signal: [first_assigned, first_linked_pr, "label:in progress"]
+
+# A PR starts at the earliest of: first_commit (author date), opened.
+pr_started_signal: [first_commit, opened]
+
+# Labels that mark an item as a bug, an incident, or a hotfix (case-insensitive).
+# Quote names containing ": " or YAML reads them as mappings.
+labels:
+  bug: [bug, "type: bug"]
+  incident: [incident, sev1, sev2]
+  hotfix: [hotfix]
+
+# Where production deploys come from: releases | deployments | workflow:<name>
+deployment_source: releases
+# For `deployments`: which environments count as production.
+deployment_environments: [production, prod]
+# For `releases`: whether pre-releases count as deploys.
+include_prereleases: false
+
+# Actions workflows whose runs to ingest (name or file name), in addition to the
+# deployment workflow when deployment_source is workflow:<name>.
+workflows: []
+
+# Items kept in the model but left out of metrics.
+exclude:
+  state_reason: [NOT_PLANNED, DUPLICATE]
+  labels: [duplicate, wontfix, invalid]
+  bots: true          # items authored by GitHub Apps (Dependabot, pre-commit-ci, ...)
+
+repos:
+  # The Day 7 case study; see docs/decisions/0001-demo-repo.md.
+  streamlit/streamlit:
+    labels:
+      bug: ["type:bug"]
+      # Streamlit has no incident label; a regression is the closest thing to a failed
+      # change. Revisit when change failure rate is defined.
+      incident: ["type:regression"]
+      hotfix: []
+    exclude:
+      labels: ["type:no-streamlit-issue", "status:cannot-reproduce"]
+    # Also ingest the release pipeline, a second deploy signal to compare with releases.
+    workflows: [Build Release]
