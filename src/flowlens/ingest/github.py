@@ -1,277 +1,186 @@
-"""GitHub GraphQL access: auth, a rate-limit-aware client, pagination, and row mapping.
+"""Issues and pull requests over GraphQL: queries, pagination, and row mapping.
 
 Issues and pull requests are both read newest-updated first. For issues GitHub filters by
 ``since`` server-side; pull requests have no such filter, so we stop paging at the first PR
 older than ``since``. Updating an item during a crawl only moves it to the front of the
 ordering, so a crawl can repeat items but never skips one that hasn't changed.
+
+Nested lists (an issue's timeline, a PR's reviews) come back capped on the first page; the
+rest is fetched with follow-up ``node(id:)`` queries before the item is yielded.
 """
 
-import random
-import subprocess
-import time
-from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from typing import Any
 
-import httpx
+from flowlens.ingest.client import GitHubClient, GitHubError
 
-from flowlens import __version__
-
-GRAPHQL_URL = "https://api.github.com/graphql"
-
-ISSUE_PAGE_SIZE = 100
-# PR nodes carry commits, reviews, and diff stats; GitHub times out (502) more often on
-# big PR pages, so they are fetched in smaller pages.
+# GitHub silently drops timeline events from big issue pages. At 50 issues a page, 52 of
+# 100 streamlit issues came back missing events, with no error and hasNextPage false
+# (totalCount drops with them). Pages of 10 and 25 matched per-issue fetches on 300 issues.
+ISSUE_PAGE_SIZE = 25
+# PR pages of 50 matched per-PR fetches (reviews, first commit, closing references).
 PULL_REQUEST_PAGE_SIZE = 50
 
-ISSUES_QUERY = """
+ISSUE_EVENT_TYPES = (
+    "[ASSIGNED_EVENT, UNASSIGNED_EVENT, LABELED_EVENT, UNLABELED_EVENT, "
+    "CROSS_REFERENCED_EVENT, CONNECTED_EVENT, CLOSED_EVENT, REOPENED_EVENT]"
+)
+
+# Each query is composed from exactly the fragments it spreads: GraphQL rejects a
+# document that defines a fragment it doesn't use.
+LINKED_PR_FRAGMENT = """
+fragment LinkedPullRequest on PullRequest { number createdAt repository { nameWithOwner } }
+"""
+
+TIMELINE_FRAGMENT = (
+    """
+fragment IssueTimelineItem on IssueTimelineItems {
+  __typename
+  ... on AssignedEvent {
+    id createdAt actor { login }
+    assignee { ... on User { login } ... on Bot { login } ... on Mannequin { login } }
+  }
+  ... on UnassignedEvent {
+    id createdAt actor { login }
+    assignee { ... on User { login } ... on Bot { login } ... on Mannequin { login } }
+  }
+  ... on LabeledEvent { id createdAt actor { login } label { name } }
+  ... on UnlabeledEvent { id createdAt actor { login } label { name } }
+  ... on CrossReferencedEvent {
+    id createdAt willCloseTarget actor { login }
+    source { __typename ...LinkedPullRequest }
+  }
+  ... on ConnectedEvent { id createdAt actor { login } subject { __typename ...LinkedPullRequest } }
+  ... on ClosedEvent {
+    id createdAt stateReason actor { login }
+    closer { __typename ...LinkedPullRequest }
+  }
+  ... on ReopenedEvent { id createdAt actor { login } }
+}
+"""
+    + LINKED_PR_FRAGMENT
+)
+
+ISSUE_FIELDS_FRAGMENT = (
+    """
+fragment IssueFields on Issue {
+  id number title url state stateReason createdAt updatedAt closedAt
+  author { login __typename }
+  labels(first: 50) { nodes { name } }
+  assignees(first: 20) { nodes { login } }
+  timelineItems(first: 50, itemTypes: """
+    + ISSUE_EVENT_TYPES
+    + """) {
+    pageInfo { hasNextPage endCursor }
+    nodes { ...IssueTimelineItem }
+  }
+}
+"""
+    + TIMELINE_FRAGMENT
+)
+
+REVIEW_FRAGMENT = """
+fragment Review on PullRequestReview { id state submittedAt author { login __typename } }
+"""
+
+PULL_REQUEST_FIELDS_FRAGMENT = (
+    """
+fragment PullRequestFields on PullRequest {
+  id number title url state isDraft createdAt updatedAt mergedAt closedAt
+  additions deletions baseRefName
+  mergeCommit { oid }
+  author { login __typename }
+  labels(first: 50) { nodes { name } }
+  commits(first: 1) { nodes { commit { authoredDate committedDate } } }
+  closingIssuesReferences(first: 10) { nodes { number repository { nameWithOwner } } }
+  reviews(first: 50) { pageInfo { hasNextPage endCursor } nodes { ...Review } }
+}
+"""
+    + REVIEW_FRAGMENT
+)
+
+ISSUES_QUERY = (
+    """
 query Issues($owner: String!, $name: String!, $first: Int!, $cursor: String, $since: DateTime) {
   rateLimit { limit cost remaining resetAt }
   repository(owner: $owner, name: $name) {
     issues(first: $first, after: $cursor, filterBy: {since: $since},
            orderBy: {field: UPDATED_AT, direction: DESC}) {
       pageInfo { hasNextPage endCursor }
-      nodes {
-        number
-        title
-        url
-        state
-        stateReason
-        createdAt
-        updatedAt
-        closedAt
-        author { login __typename }
-        labels(first: 50) { nodes { name } }
-        assignees(first: 20) { nodes { login } }
-      }
+      nodes { ...IssueFields }
     }
   }
 }
 """
+    + ISSUE_FIELDS_FRAGMENT
+)
 
-PULL_REQUESTS_QUERY = """
+PULL_REQUESTS_QUERY = (
+    """
 query PullRequests($owner: String!, $name: String!, $first: Int!, $cursor: String) {
   rateLimit { limit cost remaining resetAt }
   repository(owner: $owner, name: $name) {
     pullRequests(first: $first, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
       pageInfo { hasNextPage endCursor }
-      nodes {
-        number
-        title
-        url
-        state
-        isDraft
-        createdAt
-        updatedAt
-        mergedAt
-        closedAt
-        additions
-        deletions
-        baseRefName
-        author { login __typename }
-        labels(first: 50) { nodes { name } }
-        commits(first: 1) { nodes { commit { authoredDate committedDate } } }
-        reviews(first: 20) { nodes { submittedAt author { login __typename } } }
+      nodes { ...PullRequestFields }
+    }
+  }
+}
+"""
+    + PULL_REQUEST_FIELDS_FRAGMENT
+)
+
+ISSUE_TIMELINE_QUERY = (
+    """
+query IssueTimeline($id: ID!, $cursor: String) {
+  rateLimit { limit cost remaining resetAt }
+  node(id: $id) {
+    ... on Issue {
+      timelineItems(first: 100, after: $cursor, itemTypes: """
+    + ISSUE_EVENT_TYPES
+    + """) {
+        pageInfo { hasNextPage endCursor }
+        nodes { ...IssueTimelineItem }
       }
     }
   }
 }
 """
+    + TIMELINE_FRAGMENT
+)
 
-RETRYABLE_STATUSES = {500, 502, 503, 504}
-# GitHub asks clients to wait at least a minute on a secondary rate limit with no headers.
-SECONDARY_LIMIT_WAIT = 60.0
-
-
-class GitHubError(RuntimeError):
-    """GitHub returned something FlowLens can't recover from."""
-
-
-class GitHubAuthError(GitHubError):
-    """No usable token, or GitHub rejected it."""
-
-
-def token_from_gh() -> str:
-    """Return the token the GitHub CLI is logged in with. It is kept in memory only."""
-    try:
-        result = subprocess.run(
-            ["gh", "auth", "token"], capture_output=True, text=True, check=True, timeout=15
-        )
-    except FileNotFoundError as exc:
-        raise GitHubAuthError(
-            "GitHub CLI `gh` not found. Install it and run `gh auth login`."
-        ) from exc
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        raise GitHubAuthError("`gh auth token` failed. Run `gh auth login` first.") from exc
-    token = result.stdout.strip()
-    if not token:
-        raise GitHubAuthError("`gh auth token` printed nothing. Run `gh auth login` first.")
-    return token
-
-
-@dataclass(frozen=True)
-class RateLimit:
-    limit: int
-    remaining: int
-    cost: int
-    reset_at: datetime
-
-
-class GraphQLClient:
-    """POSTs GraphQL queries, retries transient failures, and paces itself on rate limits.
-
-    ``calls`` counts HTTP requests (retries included) and ``cost`` sums the rate-limit points
-    GitHub charged, so callers can report what a run used.
+PULL_REQUEST_REVIEWS_QUERY = (
     """
+query PullRequestReviews($id: ID!, $cursor: String) {
+  rateLimit { limit cost remaining resetAt }
+  node(id: $id) {
+    ... on PullRequest {
+      reviews(first: 100, after: $cursor) {
+        pageInfo { hasNextPage endCursor }
+        nodes { ...Review }
+      }
+    }
+  }
+}
+"""
+    + REVIEW_FRAGMENT
+)
 
-    def __init__(
-        self,
-        token: str,
-        *,
-        transport: httpx.BaseTransport | None = None,
-        sleep: Callable[[float], None] = time.sleep,
-        now: Callable[[], datetime] = lambda: datetime.now(UTC),
-        log: Callable[[str], None] | None = None,
-        max_retries: int = 6,
-        backoff_base: float = 1.0,
-        backoff_cap: float = 60.0,
-        min_remaining: int = 50,
-        timeout: float = 60.0,
-    ) -> None:
-        self._http = httpx.Client(
-            headers={
-                "Authorization": f"bearer {token}",
-                "User-Agent": f"flowlens/{__version__}",
-            },
-            transport=transport,
-            timeout=timeout,
-        )
-        self._sleep = sleep
-        self._now = now
-        self._log = log or (lambda _message: None)
-        self.max_retries = max_retries
-        self.backoff_base = backoff_base
-        self.backoff_cap = backoff_cap
-        self.min_remaining = min_remaining
-        self.calls = 0
-        self.cost = 0
-        self.rate_limit: RateLimit | None = None
-
-    def close(self) -> None:
-        self._http.close()
-
-    def __enter__(self) -> "GraphQLClient":
-        return self
-
-    def __exit__(self, *_exc: object) -> None:
-        self.close()
-
-    def query(self, query: str, variables: dict[str, Any]) -> dict[str, Any]:
-        """Run a query and return its ``data``, retrying with exponential backoff."""
-        for attempt in range(self.max_retries + 1):
-            self.calls += 1
-            try:
-                response = self._http.post(
-                    GRAPHQL_URL, json={"query": query, "variables": variables}
-                )
-            except httpx.TransportError as exc:
-                wait, reason = self._backoff(attempt), f"network error ({type(exc).__name__})"
-            else:
-                wait, reason = self._retry_wait(response, attempt)
-                if wait is None:
-                    return self._parse(response)
-            if attempt == self.max_retries:
-                raise GitHubError(f"Giving up after {attempt + 1} attempts: {reason}.")
-            self._log(f"{reason}; retrying in {wait:.0f}s")
-            self._sleep(wait)
-        raise AssertionError("unreachable")
-
-    def _retry_wait(self, response: httpx.Response, attempt: int) -> tuple[float | None, str]:
-        """How long to wait before retrying this response, or None if it shouldn't be."""
-        status = response.status_code
-        if status == 200:
-            if _graphql_rate_limited(response):
-                return self._seconds_until_reset(response), "GraphQL rate limit exhausted"
-            return None, ""
-        if status == 429 or (status == 403 and _looks_rate_limited(response)):
-            return self._rate_limit_wait(response, attempt), f"HTTP {status} rate limited"
-        if status in RETRYABLE_STATUSES:
-            return self._backoff(attempt), f"HTTP {status}"
-        return None, ""
-
-    def _parse(self, response: httpx.Response) -> dict[str, Any]:
-        if response.status_code == 401:
-            raise GitHubAuthError("GitHub rejected the token (HTTP 401). Run `gh auth login`.")
-        if response.status_code != 200:
-            raise GitHubError(f"HTTP {response.status_code}: {response.text[:300]}")
-        payload = response.json()
-        if errors := payload.get("errors"):
-            raise GitHubError("; ".join(e.get("message", str(e)) for e in errors))
-        data = payload["data"]
-        self._track(data.get("rateLimit"))
-        return data
-
-    def _track(self, rate_limit: dict[str, Any] | None) -> None:
-        if not rate_limit:
-            return
-        self.rate_limit = RateLimit(
-            limit=rate_limit["limit"],
-            remaining=rate_limit["remaining"],
-            cost=rate_limit["cost"],
-            reset_at=parse_ts(rate_limit["resetAt"]),
-        )
-        self.cost += rate_limit["cost"]
-        if self.rate_limit.remaining < self.min_remaining:
-            wait = max(0.0, (self.rate_limit.reset_at - self._now()).total_seconds()) + 1
-            self._log(
-                f"{self.rate_limit.remaining} rate-limit points left; "
-                f"pausing {wait:.0f}s until reset"
-            )
-            self._sleep(wait)
-
-    def _backoff(self, attempt: int) -> float:
-        delay = self.backoff_base * 2**attempt
-        return min(self.backoff_cap, delay * (1 + 0.25 * random.random()))
-
-    def _rate_limit_wait(self, response: httpx.Response, attempt: int) -> float:
-        retry_after = response.headers.get("retry-after", "")
-        if retry_after.isdigit():
-            return float(retry_after)
-        reset = response.headers.get("x-ratelimit-reset", "")
-        if response.headers.get("x-ratelimit-remaining") == "0" and reset.isdigit():
-            return max(0.0, int(reset) - self._now().timestamp()) + 1
-        return max(SECONDARY_LIMIT_WAIT, self._backoff(attempt))
-
-    def _seconds_until_reset(self, response: httpx.Response) -> float:
-        reset = response.headers.get("x-ratelimit-reset", "")
-        if reset.isdigit():
-            return max(0.0, int(reset) - self._now().timestamp()) + 1
-        if self.rate_limit is not None:
-            return max(0.0, (self.rate_limit.reset_at - self._now()).total_seconds()) + 1
-        return SECONDARY_LIMIT_WAIT
-
-
-def _looks_rate_limited(response: httpx.Response) -> bool:
-    """403 means "rate limited" only with these signals; otherwise it's a permissions error."""
-    headers = response.headers
-    return (
-        "retry-after" in headers
-        or headers.get("x-ratelimit-remaining") == "0"
-        or "rate limit" in response.text.lower()
-    )
-
-
-def _graphql_rate_limited(response: httpx.Response) -> bool:
-    try:
-        errors = response.json().get("errors") or []
-    except ValueError:
-        return False
-    return any(error.get("type") == "RATE_LIMITED" for error in errors)
+TIMELINE_EVENT_TYPES = {
+    "AssignedEvent": "assigned",
+    "UnassignedEvent": "unassigned",
+    "LabeledEvent": "labeled",
+    "UnlabeledEvent": "unlabeled",
+    "CrossReferencedEvent": "cross_referenced",
+    "ConnectedEvent": "connected",
+    "ClosedEvent": "closed",
+    "ReopenedEvent": "reopened",
+}
 
 
 def paginate(
-    client: GraphQLClient, query: str, variables: dict[str, Any], connection: str
+    client: GitHubClient, query: str, variables: dict[str, Any], connection: str
 ) -> Iterator[list[dict[str, Any]]]:
     """Yield pages of nodes from ``repository.<connection>``, following ``endCursor``."""
     cursor: str | None = None
@@ -289,40 +198,84 @@ def paginate(
         cursor = page["pageInfo"]["endCursor"]
 
 
-def fetch_issues(
-    client: GraphQLClient,
-    owner: str,
-    name: str,
-    since: datetime | None = None,
-    page_size: int = ISSUE_PAGE_SIZE,
+def newer_than(
+    pages: Iterator[list[dict[str, Any]]], since: datetime | None, field: str
 ) -> Iterator[list[dict[str, Any]]]:
-    """Yield pages of issues updated at or after ``since`` (all issues when None)."""
-    variables = {"owner": owner, "name": name, "first": page_size, "since": format_ts(since)}
-    yield from paginate(client, ISSUES_QUERY, variables, "issues")
+    """Trim a newest-first stream of pages to nodes whose ``field`` is at or after ``since``.
 
-
-def fetch_pull_requests(
-    client: GraphQLClient,
-    owner: str,
-    name: str,
-    since: datetime | None = None,
-    page_size: int = PULL_REQUEST_PAGE_SIZE,
-) -> Iterator[list[dict[str, Any]]]:
-    """Yield pages of PRs updated at or after ``since``, stopping once older ones appear."""
-    variables = {"owner": owner, "name": name, "first": page_size}
-    for nodes in paginate(client, PULL_REQUESTS_QUERY, variables, "pullRequests"):
+    The first older node ends the stream, so no further pages are requested.
+    """
+    for nodes in pages:
         if since is None:
             yield nodes
             continue
-        fresh = [node for node in nodes if parse_ts(node["updatedAt"]) >= since]
+        fresh = [node for node in nodes if parse_ts(node[field]) >= since]
         if fresh:
             yield fresh
         if len(fresh) < len(nodes):
             return
 
 
+def complete_connection(client: GitHubClient, node: dict[str, Any], field: str, query: str) -> int:
+    """Fetch the rest of ``node[field]`` in place if GitHub capped it. Returns pages added."""
+    connection = node.get(field)
+    pages = 0
+    while connection and connection["pageInfo"]["hasNextPage"]:
+        data = client.query(
+            query, {"id": node["id"], "cursor": connection["pageInfo"]["endCursor"]}
+        )
+        more = data["node"][field]
+        connection["nodes"].extend(more["nodes"])
+        connection["pageInfo"] = more["pageInfo"]
+        pages += 1
+    return pages
+
+
+def fetch_issues(
+    client: GitHubClient,
+    owner: str,
+    name: str,
+    since: datetime | None = None,
+    page_size: int = ISSUE_PAGE_SIZE,
+) -> Iterator[list[dict[str, Any]]]:
+    """Yield pages of issues updated at or after ``since`` (all issues when None),
+    each with its complete timeline."""
+    variables = {"owner": owner, "name": name, "first": page_size, "since": format_ts(since)}
+    for nodes in paginate(client, ISSUES_QUERY, variables, "issues"):
+        for node in nodes:
+            complete_issue(client, node)
+        yield nodes
+
+
+def complete_issue(client: GitHubClient, node: dict[str, Any]) -> None:
+    """Fetch the rest of an issue's timeline in place, re-reading it if it was cut short."""
+    complete_connection(client, node, "timelineItems", ISSUE_TIMELINE_QUERY)
+    if node["state"] == "CLOSED" and not _has_event(node, "ClosedEvent"):
+        # Every closed issue has a close event, so this timeline lost events (see
+        # ISSUE_PAGE_SIZE). Read it again on its own.
+        node["timelineItems"] = {"pageInfo": {"hasNextPage": True, "endCursor": None}, "nodes": []}
+        complete_connection(client, node, "timelineItems", ISSUE_TIMELINE_QUERY)
+
+
+def fetch_pull_requests(
+    client: GitHubClient,
+    owner: str,
+    name: str,
+    since: datetime | None = None,
+    page_size: int = PULL_REQUEST_PAGE_SIZE,
+) -> Iterator[list[dict[str, Any]]]:
+    """Yield pages of PRs updated at or after ``since``, each with all of its reviews."""
+    variables = {"owner": owner, "name": name, "first": page_size}
+    pages = paginate(client, PULL_REQUESTS_QUERY, variables, "pullRequests")
+    for nodes in newer_than(pages, since, "updatedAt"):
+        for node in nodes:
+            complete_connection(client, node, "reviews", PULL_REQUEST_REVIEWS_QUERY)
+        yield nodes
+
+
 def issue_row(node: dict[str, Any]) -> dict[str, Any]:
-    """Flatten an issue node into an ``issues`` row. ``raw`` keeps the node as fetched."""
+    """Flatten an issue node into an ``issues`` row. ``raw`` keeps the node as fetched,
+    minus the timeline, which goes to ``issue_events``."""
     return {
         "number": node["number"],
         "title": node["title"],
@@ -336,15 +289,54 @@ def issue_row(node: dict[str, Any]) -> dict[str, Any]:
         "labels": [label["name"] for label in _nodes(node.get("labels"))],
         "assignees": [user["login"] for user in _nodes(node.get("assignees"))],
         "url": node["url"],
-        "raw": node,
+        "raw": {key: value for key, value in node.items() if key != "timelineItems"},
     }
 
 
-def pull_request_row(node: dict[str, Any]) -> dict[str, Any]:
-    """Flatten a PR node into a ``pull_requests`` row. ``raw`` keeps the node as fetched."""
+def issue_event_rows(node: dict[str, Any]) -> list[dict[str, Any]]:
+    """One ``issue_events`` row per timeline event we track.
+
+    Cross-references from issues (rather than PRs) say nothing about work on this issue,
+    so they're dropped. PR links keep the PR's repository; the model decides whether a PR
+    in another repo counts.
+    """
+    rows = []
+    for event in _nodes(node.get("timelineItems")):
+        event_type = TIMELINE_EVENT_TYPES.get(event.get("__typename", ""))
+        if event_type is None or "id" not in event:
+            continue
+        linked = event.get("source") or event.get("subject") or event.get("closer") or {}
+        is_pr = linked.get("__typename") == "PullRequest"
+        if event_type == "cross_referenced" and not is_pr:
+            continue
+        rows.append(
+            {
+                "id": event["id"],
+                "issue_number": node["number"],
+                "event_type": event_type,
+                "created_at": parse_ts(event["createdAt"]),
+                "actor": _login(event.get("actor")),
+                "label": (event.get("label") or {}).get("name"),
+                "assignee": _login(event.get("assignee")),
+                "pr_number": linked.get("number") if is_pr else None,
+                "pr_repo": (linked.get("repository") or {}).get("nameWithOwner") if is_pr else None,
+                "pr_created_at": parse_ts(linked.get("createdAt")) if is_pr else None,
+                "will_close": event.get("willCloseTarget"),
+                "state_reason": event.get("stateReason"),
+                "raw": event,
+            }
+        )
+    return rows
+
+
+def pull_request_row(node: dict[str, Any], repo: str) -> dict[str, Any]:
+    """Flatten a PR node into a ``pull_requests`` row. ``raw`` keeps the node as fetched,
+    minus its reviews, which go to ``pr_reviews``."""
     author = _login(node.get("author"))
     commits = _nodes(node.get("commits"))
-    first_review_at, first_reviewer = first_review(_nodes(node.get("reviews")), author)
+    reviews = _nodes(node.get("reviews"))
+    first_review_at, first_reviewer = first_review(reviews, author)
+    first_approval_at, _ = first_review(reviews, author, states={"APPROVED"})
     return {
         "number": node["number"],
         "title": node["title"],
@@ -359,34 +351,68 @@ def pull_request_row(node: dict[str, Any]) -> dict[str, Any]:
         "author": author,
         "author_type": _actor_type(node.get("author")),
         "base_ref_name": node.get("baseRefName"),
+        "merge_commit_sha": (node.get("mergeCommit") or {}).get("oid"),
         "first_commit_at": parse_ts(commits[0]["commit"]["authoredDate"]) if commits else None,
         "first_review_at": first_review_at,
         "first_reviewer": first_reviewer,
+        "first_approval_at": first_approval_at,
+        "review_count": sum(1 for review in reviews if _counts_as_review(review, author)),
+        "closing_issues": [
+            issue["number"]
+            for issue in _nodes(node.get("closingIssuesReferences"))
+            if _same_repo((issue.get("repository") or {}).get("nameWithOwner"), repo)
+        ],
         "labels": [label["name"] for label in _nodes(node.get("labels"))],
         "url": node["url"],
-        "raw": node,
+        "raw": {key: value for key, value in node.items() if key != "reviews"},
     }
 
 
-def first_review(
-    reviews: list[dict[str, Any]], pr_author: str | None
-) -> tuple[datetime | None, str | None]:
-    """Earliest submitted review by someone other than the PR author.
+def review_rows(node: dict[str, Any]) -> list[dict[str, Any]]:
+    """One ``pr_reviews`` row per review on a PR node, pending ones included."""
+    return [
+        {
+            "id": review["id"],
+            "pr_number": node["number"],
+            "author": _login(review.get("author")),
+            "author_type": _actor_type(review.get("author")),
+            "state": review["state"],
+            "submitted_at": parse_ts(review.get("submittedAt")),
+        }
+        for review in _nodes(node.get("reviews"))
+        if review.get("id")
+    ]
 
-    Replying to a review thread on your own PR creates a review authored by you, so the
-    author's own reviews are skipped. Unsubmitted (pending) reviews have no timestamp.
+
+def first_review(
+    reviews: list[dict[str, Any]], pr_author: str | None, states: set[str] | None = None
+) -> tuple[datetime | None, str | None]:
+    """Earliest submitted review by a person other than the PR author.
+
+    Replying to a review thread on your own PR creates a review authored by you, and bots
+    (Copilot, AI reviewers) review within minutes of a PR opening, so neither counts as the
+    first review a human waited for. Pending reviews have no timestamp. ``states`` limits
+    the search, e.g. to ``{"APPROVED"}`` for the first approval.
     """
     earliest: tuple[datetime, str | None] | None = None
     for review in reviews:
-        submitted = parse_ts(review.get("submittedAt"))
-        if submitted is None:
+        if not _counts_as_review(review, pr_author):
             continue
-        reviewer = _login(review.get("author"))
-        if pr_author is not None and reviewer == pr_author:
+        if states is not None and review.get("state") not in states:
             continue
+        submitted = parse_ts(review["submittedAt"])
         if earliest is None or submitted < earliest[0]:
-            earliest = (submitted, reviewer)
+            earliest = (submitted, _login(review.get("author")))
     return earliest if earliest else (None, None)
+
+
+def _counts_as_review(review: dict[str, Any], pr_author: str | None) -> bool:
+    if review.get("submittedAt") is None:
+        return False
+    reviewer = review.get("author")
+    if _actor_type(reviewer) == "Bot":
+        return False
+    return pr_author is None or _login(reviewer) != pr_author
 
 
 def parse_ts(value: str | None) -> datetime | None:
@@ -402,6 +428,14 @@ def format_ts(value: datetime | None) -> str | None:
     return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _has_event(node: dict[str, Any], typename: str) -> bool:
+    return any(event.get("__typename") == typename for event in _nodes(node.get("timelineItems")))
+
+
+def _same_repo(name_with_owner: str | None, repo: str) -> bool:
+    return name_with_owner is not None and name_with_owner.lower() == repo.lower()
+
+
 def _nodes(connection: dict[str, Any] | None) -> list[dict[str, Any]]:
     if not connection:
         return []
@@ -410,7 +444,7 @@ def _nodes(connection: dict[str, Any] | None) -> list[dict[str, Any]]:
 
 def _login(actor: dict[str, Any] | None) -> str | None:
     # A deleted account comes back as a null actor (GitHub shows it as "ghost").
-    return actor["login"] if actor else None
+    return actor.get("login") if actor else None
 
 
 def _actor_type(actor: dict[str, Any] | None) -> str | None:

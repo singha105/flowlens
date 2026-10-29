@@ -1,39 +1,72 @@
 """Incremental ingest: decide what to fetch, stream it into DuckDB, record the run.
 
 ``--since`` sets how far back the database should reach. After a successful run, the next
-run only asks GitHub for items updated after that run's high-water mark, as long as the
-database already reaches back as far as the new ``--since``. Asking for older history
-than the database holds (or passing ``--full``) triggers a full fetch from ``--since``.
+run only asks GitHub for items changed after each entity's high-water mark, as long as the
+database already reaches back as far as the new ``--since`` and was filled by the current
+set of queries. Otherwise (or with ``--full``) everything is fetched again from ``--since``.
 """
 
 import time
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from flowlens.ingest.client import GitHubClient, token_from_gh
+from flowlens.ingest.delivery import (
+    deployment_row,
+    deployment_status_rows,
+    fetch_deployments,
+    fetch_releases,
+    fetch_workflow_runs,
+    find_workflow,
+    release_row,
+    workflow_run_row,
+)
 from flowlens.ingest.github import (
-    GraphQLClient,
     fetch_issues,
     fetch_pull_requests,
+    issue_event_rows,
     issue_row,
+    parse_ts,
     pull_request_row,
-    token_from_gh,
+    review_rows,
 )
 from flowlens.storage import PreviousRun, Store, db_path_for
+
+# Bump when what gets fetched changes: older data then gets refetched in full.
+# 2: timelines, reviews, releases, deployments, workflow runs. 3: issue pages of 25, since
+# pages of 50 lost timeline events.
+FETCH_VERSION = 3
 
 # Re-read a few minutes before the last watermark to absorb clock skew and items whose
 # update landed in GitHub's index after we read past them. Upserts make the overlap free.
 WATERMARK_OVERLAP = timedelta(minutes=5)
+# Releases, deployments, and workflow runs are read by creation time but keep changing
+# after it (a draft is published, a status goes from in_progress to success), so recent
+# ones are re-read.
+REFRESH_WINDOW = timedelta(days=3)
+
+Node = dict[str, Any]
+
+
+@dataclass(frozen=True)
+class Entity:
+    """One stream of things to fetch, with how to store it and where to resume."""
+
+    name: str
+    fetch: Callable[[datetime | None], Iterator[list[Node]]]
+    write: Callable[[Store, list[Node]], None]
+    stamp: str  # node field that orders the stream and becomes the watermark
+    lookback: timedelta = WATERMARK_OVERLAP
 
 
 @dataclass(frozen=True)
 class RunPlan:
     mode: str  # "full" | "incremental"
     coverage_from: datetime | None
-    issues_since: datetime | None
-    prs_since: datetime | None
+    since: dict[str, datetime | None]
     previous: PreviousRun | None = None
 
 
@@ -42,10 +75,8 @@ class IngestSummary:
     repo: str
     db_path: Path
     mode: str
-    issues_since: datetime | None
-    prs_since: datetime | None
-    issues_fetched: int
-    prs_fetched: int
+    since: dict[str, datetime | None]
+    fetched: dict[str, int]
     first_updated: datetime | None
     last_updated: datetime | None
     api_calls: int
@@ -53,8 +84,7 @@ class IngestSummary:
     rate_remaining: int | None
     rate_limit: int | None
     seconds: float
-    issues_stored: int
-    prs_stored: int
+    stored: dict[str, int] = field(default_factory=dict)
 
 
 def parse_repo(repo: str) -> tuple[str, str]:
@@ -64,16 +94,29 @@ def parse_repo(repo: str) -> tuple[str, str]:
     return owner, name
 
 
-def plan_run(previous: PreviousRun | None, *, since: datetime | None, full: bool) -> RunPlan:
+def plan_run(
+    previous: PreviousRun | None,
+    *,
+    since: datetime | None,
+    full: bool,
+    lookbacks: dict[str, timedelta],
+) -> RunPlan:
     """Choose a full or incremental fetch and the ``since`` bound for each entity."""
-    if full or previous is None or not _covers(previous.coverage_from, since):
-        return RunPlan("full", since, since, since)
+    if (
+        full
+        or previous is None
+        or previous.fetch_version != FETCH_VERSION
+        or not _covers(previous.coverage_from, since)
+    ):
+        return RunPlan("full", since, dict.fromkeys(lookbacks, since))
     floor = previous.coverage_from
     return RunPlan(
         "incremental",
         floor,
-        _resume_from(previous.issues_watermark, floor),
-        _resume_from(previous.prs_watermark, floor),
+        {
+            entity: _resume_from(previous.watermarks.get(entity), floor, lookback)
+            for entity, lookback in lookbacks.items()
+        },
         previous,
     )
 
@@ -85,42 +128,99 @@ def _covers(coverage_from: datetime | None, since: datetime | None) -> bool:
     return since is not None and coverage_from <= since
 
 
-def _resume_from(watermark: datetime | None, floor: datetime | None) -> datetime | None:
+def _resume_from(
+    watermark: datetime | None, floor: datetime | None, lookback: timedelta
+) -> datetime | None:
     if watermark is None:
-        return floor
-    resume = watermark - WATERMARK_OVERLAP
+        return floor  # never fetched (a newly configured workflow), or nothing found yet
+    resume = watermark - lookback
     return max(resume, floor) if floor is not None else resume
+
+
+def build_entities(
+    client: GitHubClient, owner: str, name: str, workflows: list[dict[str, Any]]
+) -> list[Entity]:
+    repo = f"{owner}/{name}"
+
+    def write_issues(store: Store, nodes: list[Node]) -> None:
+        store.upsert("issues", [issue_row(node) for node in nodes])
+        store.upsert("issue_events", [row for node in nodes for row in issue_event_rows(node)])
+
+    def write_pull_requests(store: Store, nodes: list[Node]) -> None:
+        store.upsert("pull_requests", [pull_request_row(node, repo) for node in nodes])
+        store.upsert("pr_reviews", [row for node in nodes for row in review_rows(node)])
+
+    def write_deployments(store: Store, nodes: list[Node]) -> None:
+        store.upsert("deployments", [deployment_row(node) for node in nodes])
+        store.upsert(
+            "deployment_statuses", [row for node in nodes for row in deployment_status_rows(node)]
+        )
+
+    entities = [
+        Entity(
+            "issues",
+            lambda since: fetch_issues(client, owner, name, since),
+            write_issues,
+            "updatedAt",
+        ),
+        Entity(
+            "pull_requests",
+            lambda since: fetch_pull_requests(client, owner, name, since),
+            write_pull_requests,
+            "updatedAt",
+        ),
+        Entity(
+            "releases",
+            lambda since: fetch_releases(client, owner, name, since),
+            lambda store, nodes: store.upsert("releases", [release_row(n) for n in nodes]),
+            "createdAt",
+            REFRESH_WINDOW,
+        ),
+        Entity(
+            "deployments",
+            lambda since: fetch_deployments(client, owner, name, since),
+            write_deployments,
+            "createdAt",
+            REFRESH_WINDOW,
+        ),
+    ]
+    for workflow in workflows:
+        entities.append(
+            Entity(
+                f"workflow_runs:{workflow['name']}",
+                lambda since, workflow=workflow: fetch_workflow_runs(
+                    client, owner, name, workflow, since
+                ),
+                lambda store, runs: store.upsert(
+                    "workflow_runs", [workflow_run_row(run) for run in runs]
+                ),
+                "created_at",
+                REFRESH_WINDOW,
+            )
+        )
+    return entities
 
 
 @dataclass
 class _Tally:
     fetched: int = 0
-    first_updated: datetime | None = None
-    last_updated: datetime | None = None
+    first: datetime | None = None
+    last: datetime | None = None
 
-    def add(self, rows: list[dict[str, Any]]) -> None:
-        self.fetched += len(rows)
-        for row in rows:
-            updated = row["updated_at"]
-            if self.first_updated is None or updated < self.first_updated:
-                self.first_updated = updated
-            if self.last_updated is None or updated > self.last_updated:
-                self.last_updated = updated
+    def add(self, stamps: list[datetime]) -> None:
+        self.fetched += len(stamps)
+        if stamps:
+            self.first = min(stamps) if self.first is None else min(self.first, *stamps)
+            self.last = max(stamps) if self.last is None else max(self.last, *stamps)
 
 
-def _drain(
-    label: str,
-    pages: Iterator[list[dict[str, Any]]],
-    to_row: Callable[[dict[str, Any]], dict[str, Any]],
-    upsert: Callable[[list[dict[str, Any]]], int],
-    progress: Callable[[str], None],
-) -> _Tally:
+def _drain(entity: Entity, since: datetime | None, store: Store, progress: Callable) -> _Tally:
     """Write each page as it arrives, so a failed run keeps what it already fetched."""
     tally = _Tally()
-    for page_number, nodes in enumerate(pages, start=1):
-        rows = [to_row(node) for node in nodes]
-        upsert(rows)
-        tally.add(rows)
+    label = entity.name.replace("_", " ")
+    for page_number, nodes in enumerate(entity.fetch(since), start=1):
+        entity.write(store, nodes)
+        tally.add([parse_ts(node[entity.stamp]) for node in nodes])
         progress(f"{label}: page {page_number}, {tally.fetched} fetched")
     return tally
 
@@ -142,101 +242,91 @@ def ingest_repo(
     *,
     since: datetime | None = None,
     full: bool = False,
+    workflows: tuple[str, ...] = (),
     data_dir: Path = Path("data"),
-    client: GraphQLClient | None = None,
+    client: GitHubClient | None = None,
     progress: Callable[[str], None] | None = None,
 ) -> IngestSummary:
-    """Fetch issues and PRs for ``owner/name`` into ``data_dir/<owner>__<name>.duckdb``."""
+    """Fetch issues, PRs, releases, deployments, and the named workflows' runs for
+    ``owner/name`` into ``data_dir/<owner>__<name>.duckdb``."""
     owner, name = parse_repo(repo)
     repo = f"{owner}/{name}"
     progress = progress or (lambda _message: None)
     started = time.monotonic()
     owns_client = client is None
     if client is None:
-        client = GraphQLClient(token_from_gh(), log=progress)
+        client = GitHubClient(token_from_gh(), log=progress)
 
     db_path = db_path_for(data_dir, owner, name)
     try:
+        # "Build Release" and "release.yml" can name the same workflow; fetch it once.
+        resolved = {
+            workflow["id"]: workflow
+            for workflow in (find_workflow(client, owner, name, wanted) for wanted in workflows)
+        }
+        entities = build_entities(client, owner, name, list(resolved.values()))
         with Store(db_path) as store:
-            plan = plan_run(store.last_successful_run(repo), since=since, full=full)
+            plan = plan_run(
+                store.last_successful_run(repo),
+                since=since,
+                full=full,
+                lookbacks={entity.name: entity.lookback for entity in entities},
+            )
             run_id = store.start_run(
                 repo,
                 mode=plan.mode,
+                fetch_version=FETCH_VERSION,
                 since_requested=since,
                 coverage_from=plan.coverage_from,
-                issues_since=plan.issues_since,
-                prs_since=plan.prs_since,
             )
-            issues = _Tally()
-            prs = _Tally()
+            tallies: dict[str, _Tally] = {}
+            previous = plan.previous
             try:
-                issues = _drain(
-                    "issues",
-                    fetch_issues(client, owner, name, plan.issues_since),
-                    issue_row,
-                    store.upsert_issues,
-                    progress,
-                )
-                prs = _drain(
-                    "pull requests",
-                    fetch_pull_requests(client, owner, name, plan.prs_since),
-                    pull_request_row,
-                    store.upsert_pull_requests,
-                    progress,
-                )
+                for entity in entities:
+                    tally = _drain(entity, plan.since[entity.name], store, progress)
+                    tallies[entity.name] = tally
+                    carried = previous.watermarks.get(entity.name) if previous else None
+                    store.record_entity(
+                        run_id,
+                        entity.name,
+                        since_used=plan.since[entity.name],
+                        fetched=tally.fetched,
+                        watermark=_later(carried, tally.last),
+                    )
             except BaseException as exc:
-                # The watermarks stay where the last good run left them, so the next run
-                # refetches whatever this one didn't finish.
+                # Only successful runs are planned from, so the last good run's watermarks
+                # stay in charge and the next run refetches whatever this one didn't finish.
                 store.finish_run(
                     run_id,
                     status="failed",
-                    issues_fetched=issues.fetched,
-                    prs_fetched=prs.fetched,
-                    issues_watermark=None,
-                    prs_watermark=None,
                     api_calls=client.calls,
                     api_cost=client.cost,
                     error=str(exc) or type(exc).__name__,
                 )
                 raise
-
-            previous = plan.previous
-            store.finish_run(
-                run_id,
-                status="success",
-                issues_fetched=issues.fetched,
-                prs_fetched=prs.fetched,
-                issues_watermark=_later(
-                    previous.issues_watermark if previous else None, issues.last_updated
-                ),
-                prs_watermark=_later(
-                    previous.prs_watermark if previous else None, prs.last_updated
-                ),
-                api_calls=client.calls,
-                api_cost=client.cost,
-            )
-            issues_stored = store.count("issues")
-            prs_stored = store.count("pull_requests")
+            store.finish_run(run_id, status="success", api_calls=client.calls, api_cost=client.cost)
+            stored = {
+                table: store.count(table)
+                for table in ("issues", "pull_requests", "releases", "deployments", "workflow_runs")
+            }
     finally:
         if owns_client:
             client.close()
 
+    work = [tallies["issues"], tallies["pull_requests"]]
     rate = client.rate_limit
     return IngestSummary(
         repo=repo,
         db_path=db_path,
         mode=plan.mode,
-        issues_since=plan.issues_since,
-        prs_since=plan.prs_since,
-        issues_fetched=issues.fetched,
-        prs_fetched=prs.fetched,
-        first_updated=_earlier(issues.first_updated, prs.first_updated),
-        last_updated=_later(issues.last_updated, prs.last_updated),
+        since=plan.since,
+        fetched={entity: tally.fetched for entity, tally in tallies.items()},
+        first_updated=_earlier(work[0].first, work[1].first),
+        last_updated=_later(work[0].last, work[1].last),
         api_calls=client.calls,
         api_cost=client.cost,
         rate_remaining=rate.remaining if rate else None,
         rate_limit=rate.limit if rate else None,
         seconds=time.monotonic() - started,
-        issues_stored=issues_stored,
-        prs_stored=prs_stored,
+        stored=stored,
     )
