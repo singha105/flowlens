@@ -51,7 +51,7 @@ Non-goals for v1:
 | Monte Carlo "when" | Distribution of completion dates for N items, from resampling historical weekly throughput. |
 | Monte Carlo "how many" | Distribution of items finished by a target date. |
 | Forecast backtest | How often a forecast made at a past date, at a given percentile, covered what actually happened. |
-| Deployment frequency | Successful production deployments per week (GitHub Deployments, else releases). |
+| Deployment frequency | Successful production deploys per week, from the source named in `flowlens.yaml`: releases (default), GitHub Deployments to production environments, or a workflow's runs. |
 | Lead time for changes | Time from a PR's first commit to the deployment that shipped it. |
 | Change failure rate | Share of deployments followed within 7 days by a revert, a hotfix, or an incident-labelled issue. |
 | Failed deployment recovery time | Time from a failure signal to the next successful deployment or the incident closing. |
@@ -78,9 +78,9 @@ Durations are reported as 50th/85th/95th percentiles rather than means, because 
 
 ## Open questions
 
-1. What starts the clock for an issue with no linked PR: assignment, a label, or creation?
-2. Should bot-authored PRs (Dependabot, Renovate) be excluded by default or shown as their own series?
-3. For reopened items, do we measure to the first close or the last?
+1. ~~What starts the clock for an issue with no linked PR: assignment, a label, or creation?~~ Answered on Day 2: the earliest of first assignment, the first linked PR being opened, or a start label, configurable in `flowlens.yaml`. An issue with none of these before it closed never started, and the quality report counts how many there are.
+2. ~~Should bot-authored PRs (Dependabot, Renovate) be excluded by default or shown as their own series?~~ Answered on Day 2: excluded by default (`exclude.bots`), kept in the model, and counted in the quality report. Bot reviews never count as a first review or an approval.
+3. ~~For reopened items, do we measure to the first close or the last?~~ Answered on Day 2: to the last. A reopened issue is done when it finally closes; signals before the first close still count as its start.
 4. Calendar days or business days for cycle time?
-5. Which deploy signal wins when a repo has both releases and Deployments?
-6. Which public repo makes the best case study: active, consistently labelled, and with real deployments?
+5. ~~Which deploy signal wins when a repo has both releases and Deployments?~~ Answered on Day 2: neither wins automatically. `deployment_source` names one, releases by default, because many repos' Deployments go to preview or nightly environments rather than production. The quality report lists every signal it found.
+6. ~~Which public repo makes the best case study: active, consistently labelled, and with real deployments?~~ Answered on Day 2: streamlit/streamlit; see [decisions/0001-demo-repo.md](decisions/0001-demo-repo.md).
