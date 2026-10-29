@@ -93,7 +93,7 @@
       "head_commit": {
         "id": "7526d1bd1b4ce14065e20467017d7bafd9dbd462",
         "tree_id": "ccfe48b3e668f5d23e1b67240e4dfbaa42fed8f2",
-        "message": "[chore] Allow Pillow 13 (#17589)\n\n## Describe your changes\n\nAllows Pillow 13 so apps can install 13.0.0 and pick up its security\nfixes.\n\n- Published requirement is now `pillow>=9.2.0,<14`, and the lockfile\nresolves 13.0.0\n- Pillow 13 no longer clips 32-bit `I`-mode images when saving PNG.\n`st.image` with an `I`-mode `PIL.Image` and `output_format=\"PNG\"` raises\ninstead of clipping. Saving `I`-mode as JPEG already failed before this.\n\n## GitHub Issue Link (if applicable)\n\n- Closes #17587\n- Closes #17586\n\n## Testing Plan\n\n- No new tests. Streamlit does not call the Pillow APIs removed in\n13.0.0.\n- [x] Unit Tests (JS and/or Python) \u2014 image, image utils, pyplot,\nhashing, write, and logo tests pass on Pillow 13.0.0\n- E2E Tests \u2014 not run; no UI or element contract change\n- Manual testing \u2014 not needed\n\n---\n\n**Contribution License Agreement**\n\nBy submitting this pull request you agree that all contributions to this\nproject are made under the Apache 2.0 license.\n\nMade with [Cursor](https://cursor.com)\n\nCo-authored-by: Cursor <cursoragent@cursor.com>",
+        "message": "[chore] Allow Pillow 13 (#17589)",
         "timestamp": "2026-10-21T14:27:31Z",
         "author": {
           "name": "Lukas Masuch",
